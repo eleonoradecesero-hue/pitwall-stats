@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Statistic Hub</title>
+    <!-- CSS di Vuetify e Icone Material Design -->
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.x/dist/vuetify.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
+    <!-- Il tuo foglio di stile personalizzato -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- v-app è il contenitore base obbligatorio per Vuetify -->
+        <v-app>
+            <!-- MENU LATERALE (Drawer) -->
+            <v-navigation-drawer v-model="menuLateraleAperto" app>
+                <v-list>
+                    <!-- L'attributo "to" fa cambiare pagina senza ricaricare il sito -->
+                    <v-list-item to="/" prepend-icon="mdi-home" title="Home"></v-list-item>
+                    <v-list-item to="/profilo" prepend-icon="mdi-account" title="Profilo e Preferiti"></v-list-item>
+                    <v-list-item to="/calendario" prepend-icon="mdi-calendar" title="Calendario"></v-list-item>
+                    <v-list-item to="/classifica" prepend-icon="mdi-format-list-numbered" title="Classifica Overview"></v-list-item>
+                    <v-list-item to="/overview" prepend-icon="mdi-view-dashboard" title="Piloti e Scuderie"></v-list-item>
+                    <v-list-item to="/pronostici" prepend-icon="mdi-trophy" title="Pronostici"></v-list-item>
+                </v-list>
+            </v-navigation-drawer>
+
+            <!-- BARRA SUPERIORE (App Bar) -->
+            <v-app-bar app color="red-darken-3" theme="dark">
+                <v-app-bar-nav-icon @click="menuLateraleAperto = !menuLateraleAperto"></v-app-bar-nav-icon>
+                <v-app-bar-title>F1 Statistic Hub</v-app-bar-title>
+            </v-app-bar>
+
+            <!-- CONTENUTO CENTRALE DINAMICO -->
+            <v-main>
+                <v-container>
+                    <!-- Qui dentro Vue "inietta" la schermata corretta in base al menu -->
+                    <router-view></router-view>
+                </v-container>
+            </v-main>
+        </v-app>
+    </div>
+
+    <!-- Importiamo Vue, Vue Router e Vuetify tramite link online (CDN) per lavorare facilmente in locale -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue-router@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@3.x/dist/vuetify.min.js"></script>
+    
+    <!-- 1. Carica le singole schermate (moduli) -->
+    <script src="js/schermate/schermata_calendario.js"></script>
+    <script src="js/schermate/schermata_classifica.js"></script>
+    <script src="js/schermate/schermata_home.js"></script>
+    <script src="js/schermate/schermata_panoramica.js"></script>
+    <script src="js/schermate/schermata_profilo.js"></script>
+    <script src="js/schermate/schermata_pronostici.js"></script>
+
+    <!-- 2. Infine, carica il main.js che "assembla" tutto -->
+    <script src="js/main.js"></script>
+</body>
+</html>
