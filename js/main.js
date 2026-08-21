@@ -10,7 +10,7 @@ const rotteApplicazione = [
     { path: '/', component: SchermataIniziale },
     { path: '/calendario', component: SchermataCalendario },
     { path: '/classifica', component: SchermataClassifica },
-    { path: '/overview', component: SchermataPanoramica },
+    { path: '/panoramica', component: SchermataPanoramica },
     { path: '/profilo', component: SchermataProfilo },
     { path: '/pronostici', component: SchermataPronostici }
 ];

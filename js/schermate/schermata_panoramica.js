@@ -1,4 +1,4 @@
-// js/schermate/schermata_overview.js
+// js/schermate/schermata_panoramica.js
 
 const SchermataPanoramica = {
     template: `
@@ -6,10 +6,10 @@ const SchermataPanoramica = {
             <!-- INTESTAZIONE E SELETTORE (PILOTI / SCUDERIE) -->
             <v-row align="center" class="mb-6">
                 <v-col cols="12" md="8">
-                    <h1 class="text-h4 text-red-darken-3 font-weight-bold">Overview Piloti e Scuderie</h1>
+                    <h1 class="text-h4 text-red-darken-3 font-weight-bold">Panoramica Piloti e Scuderie</h1>
                 </v-col>
                 <v-col cols="12" md="4" class="text-md-right">
-                    <v-btn-toggle v-model="tipoOverviewSelezionato" mandatory color="red-darken-3" variant="outlined" @update:model-value="chiudiDettaglio">
+                    <v-btn-toggle v-model="tipoPanoramicaSelezionato" mandatory color="red-darken-3" variant="outlined" @update:model-value="chiudiDettaglio">
                         <v-btn value="piloti">Piloti</v-btn>
                         <v-btn value="scuderie">Scuderie</v-btn>
                     </v-btn-toggle>
@@ -27,14 +27,14 @@ const SchermataPanoramica = {
             <v-alert v-if="!caricamento && errore" type="error" variant="tonal" class="mb-6" closable>
                 {{ errore }}
                 <template v-slot:append>
-                    <v-btn variant="text" @click="caricaDatiOverview">Riprova</v-btn>
+                    <v-btn variant="text" @click="caricaDatiPanoramica">Riprova</v-btn>
                 </template>
             </v-alert>
 
             <!-- ========================================================= -->
             <!-- VISTA 1: LISTA PILOTI (Card piccole e uniformi) -->
             <!-- ========================================================= -->
-            <div v-if="!caricamento && tipoOverviewSelezionato === 'piloti' && !elementoSelezionato">
+            <div v-if="!caricamento && tipoPanoramicaSelezionato === 'piloti' && !elementoSelezionato">
                 <v-row>
                     <v-col cols="12" sm="6" md="3" v-for="pilota in listaPiloti" :key="pilota.driver_number">
                         <v-card elevation="2" class="pa-4 text-center cursor-pointer hover-card" @click="selezionaElemento(pilota)">
@@ -81,7 +81,7 @@ const SchermataPanoramica = {
             <!-- ========================================================= -->
             <!-- VISTA 2: LISTA SCUDERIE (Card piccole e uniformi) -->
             <!-- ========================================================= -->
-            <div v-if="!caricamento && tipoOverviewSelezionato === 'scuderie' && !elementoSelezionato">
+            <div v-if="!caricamento && tipoPanoramicaSelezionato === 'scuderie' && !elementoSelezionato">
                 <v-row>
                     <v-col cols="12" sm="6" md="3" v-for="scuderia in listaScuderie" :key="scuderia.nome">
                         <v-card elevation="2" class="pa-4 text-center cursor-pointer hover-card" @click="selezionaElemento(scuderia)">
@@ -130,7 +130,7 @@ const SchermataPanoramica = {
                 <v-card elevation="3" class="pa-6 bg-grey-lighten-4">
                     <v-row align="center">
                         <v-col cols="12" md="3" class="text-center">
-                            <v-avatar size="140" class="elevation-3" v-if="tipoOverviewSelezionato === 'piloti'">
+                            <v-avatar size="140" class="elevation-3" v-if="tipoPanoramicaSelezionato === 'piloti'">
                                 <v-img :src="elementoSelezionato.foto"></v-img>
                             </v-avatar>
                             <v-avatar size="140" class="elevation-3" :style="{ backgroundColor: '#' + elementoSelezionato.coloreTeam }" v-else>
@@ -144,7 +144,7 @@ const SchermataPanoramica = {
                             </div>
                             
                             <!-- Sottotitolo specifico (Pilota vs Scuderia) -->
-                            <p class="text-subtitle-1 text-grey-darken-2 mb-3" v-if="tipoOverviewSelezionato === 'piloti'">
+                            <p class="text-subtitle-1 text-grey-darken-2 mb-3" v-if="tipoPanoramicaSelezionato === 'piloti'">
                                 Numero #{{ elementoSelezionato.numero }} — Team: {{ elementoSelezionato.teamNome }} — Nazionalità: {{ elementoSelezionato.nazionalita }}
                             </p>
                             <p class="text-subtitle-1 text-grey-darken-2 mb-3" v-else>
@@ -178,7 +178,7 @@ const SchermataPanoramica = {
                                     <div class="text-h6 font-weight-bold">{{ elementoSelezionato.giriVeloci }}</div>
                                 </v-col>
                                 <!-- Ultima colonna variabile: DNF per Piloti, STAGIONI per Scuderie -->
-                                <v-col cols="4" sm="2" v-if="tipoOverviewSelezionato === 'piloti'">
+                                <v-col cols="4" sm="2" v-if="tipoPanoramicaSelezionato === 'piloti'">
                                     <div class="text-caption text-grey">DNF (Ritiro)</div>
                                     <div class="text-h6 font-weight-bold text-red-darken-3">{{ elementoSelezionato.dnf }}</div>
                                 </v-col>
@@ -196,7 +196,7 @@ const SchermataPanoramica = {
     setup() {
         const { ref, onMounted } = Vue;
 
-        const tipoOverviewSelezionato = ref('piloti');
+        const tipoPanoramicaSelezionato = ref('piloti');
         const elementoSelezionato = ref(null);
         const caricamento = ref(true);
         const errore = ref('');
@@ -204,7 +204,7 @@ const SchermataPanoramica = {
         const listaPiloti = ref([]);
         const listaScuderie = ref([]);
 
-        const caricaDatiOverview = async () => {
+        const caricaDatiPanoramica = async () => {
             caricamento.value = true;
             errore.value = '';
             try {
@@ -212,7 +212,7 @@ const SchermataPanoramica = {
                 listaPiloti.value = dati.piloti;
                 listaScuderie.value = dati.scuderie;
             } catch (eccezione) {
-                console.error("Errore durante il recupero dei dati dell'overview:", eccezione);
+                console.error("Errore durante il recupero dei dati della panoramica:", eccezione);
                 listaPiloti.value = [];
                 listaScuderie.value = [];
                 errore.value = "Non è stato possibile recuperare i dati della panoramica.";
@@ -222,7 +222,7 @@ const SchermataPanoramica = {
         };
 
         onMounted(() => {
-            caricaDatiOverview();
+            caricaDatiPanoramica();
         });
 
         const selezionaElemento = (elemento) => {
@@ -234,13 +234,13 @@ const SchermataPanoramica = {
         };
 
         return {
-            tipoOverviewSelezionato,
+            tipoPanoramicaSelezionato,
             elementoSelezionato,
             caricamento,
             errore,
             listaPiloti,
             listaScuderie,
-            caricaDatiOverview,
+            caricaDatiPanoramica,
             selezionaElemento,
             chiudiDettaglio
         };
