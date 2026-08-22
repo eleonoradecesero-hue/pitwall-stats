@@ -247,7 +247,7 @@ const SchermataIniziale = {
                             <strong>Data svolgimento:</strong> {{ sessioneSelezionata.dataFormattata }} ({{ sessioneSelezionata.oraInizio }} - {{ sessioneSelezionata.oraFine }})
                         </p>
                         <v-alert type="info" variant="tonal" class="mt-3 text-caption">
-                            I tempi dettagliati sul giro e la telemetria completa sono consultabili nella sezione <strong>Classifica</strong> e <strong>Piloti e Scuderie</strong>.
+                            I tempi dettagliati sul giro e la telemetria completa sono ancora in fase di <strong>sviluppo</strong>.
                         </v-alert>
                     </v-card-text>
                     <v-card-actions class="justify-end">
@@ -399,4 +399,4 @@ const SchermataIniziale = {
             HomeService
         };
     }
-};
+};
