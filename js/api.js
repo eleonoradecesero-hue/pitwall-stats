@@ -1,212 +1,253 @@
 // js/api.js
 
 /**
- * Indirizzo di base per tutte le chiamate alle API di OpenF1.
+ * ======================================================================================
+ * PITWALL STATS - CLIENT API UFFICIALE JOLPICA-F1 (Jolpica Ergast F1 API)
+ * ======================================================================================
+ * Questo modulo funge da connettore ufficiale per tutte le richieste dati dell'applicazione.
+ * Interroga l'API aperta e standard Jolpica F1 (compatibile Ergast):
+ * Documentazione: https://api.jolpi.ca/ergast/f1/
+ *
+ * Supporta:
+ * - Calendario e orari completi delle sessioni per qualsiasi stagione (current, 2026, 2025...)
+ * - Prossimo Gran Premio con tutte le sessioni live (/current/next.json)
+ * - Ultimo Gran Premio completato con risultati ufficiali (/current/last/results.json)
+ * - Classifiche mondiali Piloti e Costruttori in tempo reale (/driverStandings, /constructorStandings)
+ * - Risultati completi di Gara, Qualifiche e Sprint per round specifici
+ * - Elenco ufficiale dei Piloti e delle Scuderie per stagione
+ * ======================================================================================
+ */
+
+/**
+ * Indirizzo di base per tutte le chiamate alle API di Jolpica-F1.
  * @constant {string}
  */
-const INDIRIZZO_BASE_API = "https://api.openf1.org/v1";
+const INDIRIZZO_BASE_JOLPICA = "https://api.jolpi.ca/ergast/f1";
 
 /**
- * Funzione di utilità per creare una breve pausa (se necessaria per evitare rate-limit)
- * @param {number} ms - Millisecondi di attesa
+ * Cache in memoria per evitare richieste duplicate identiche nella stessa sessione di navigazione.
  */
-const attendi = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const cacheRichiesteJolpica = new Map();
 
 /**
- * Funzione di supporto interna per eseguire la richiesta HTTP e gestire gli errori.
- * Gestisce esplicitamente i casi di errore HTTP (es. 401 per sessione live OpenF1, 429 per rate-limit).
+ * Funzione generica per eseguire richieste HTTP GET a Jolpica F1 API con gestione errori e log strutturato.
  * 
- * @param {string} percorso - L'endpoint specifico (es. '/meetings', '/sessions').
- * @param {string} query - I parametri di query string (es. 'year=2024').
- * @returns {Promise<Array|Object>} - I dati restituiti dall'API in formato JSON oppure array vuoto in caso di errore.
+ * @param {string} endpoint - Il percorso relativo dell'endpoint (es. '/current/next.json', '/2026/driverStandings.json').
+ * @param {Object} [parametri={}] - Parametri opzionali da aggiungere alla query string (es. { limit: 100 }).
+ * @param {boolean} [usaCache=true] - Se true, memorizza e riutilizza la risposta in memoria per velocizzare l'app.
+ * @returns {Promise<Object|null>} - Oggetto MRData restituito dall'API oppure null in caso di errore.
  */
-async function eseguiRichiestaGenerica(percorso, query) {
-    const separatore = query ? (query.startsWith('?') ? '' : '?') : '';
-    const urlCorrente = `${INDIRIZZO_BASE_API}${percorso}${separatore}${query || ''}`;
-    
-    try {
-        const risposta = await fetch(urlCorrente);
-        
-        // Se lo status non è OK, esamina il codice di risposta
-        if (!risposta.ok) {
-            if (risposta.status === 401) {
-                // OpenF1 restituisce 401 quando c'è una sessione live in corso e l'utente non ha una chiave a pagamento
-                console.warn(`[OpenF1 API] Accesso limitato (HTTP 401) per "${percorso}": Sessione Live in corso o richiesta autenticazione.`);
-            } else if (risposta.status === 429) {
-                console.warn(`[OpenF1 API] Rate limit raggiunto (HTTP 429) per "${percorso}".`);
-            } else {
-                console.warn(`[OpenF1 API] Errore di risposta HTTP ${risposta.status} per "${percorso}".`);
-            }
-            return [];
+async function eseguiRichiestaJolpica(endpoint, parametri = {}, usaCache = true) {
+    // Normalizza l'endpoint assicurandosi che termini con .json
+    let percorso = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    if (!percorso.includes('.json')) {
+        const parti = percorso.split('?');
+        percorso = `${parti[0]}.json${parti[1] ? '?' + parti[1] : ''}`;
+    }
+
+    // Costruisci i parametri di query string
+    const urlOggetto = new URL(`${INDIRIZZO_BASE_JOLPICA}${percorso}`);
+    for (const [chiave, valore] of Object.entries(parametri)) {
+        if (valore !== undefined && valore !== null) {
+            urlOggetto.searchParams.append(chiave, valore);
         }
-        
-        const dati = await risposta.json();
-        return Array.isArray(dati) ? dati : (dati && typeof dati === 'object' ? dati : []);
+    }
+
+    const urlCompleto = urlOggetto.toString();
+
+    // Controlla se la risposta è già presente in cache
+    if (usaCache && cacheRichiesteJolpica.has(urlCompleto)) {
+        console.log(`[Jolpica F1 API (Cache)] ⚡ ${percorso}`);
+        return cacheRichiesteJolpica.get(urlCompleto);
+    }
+
+    try {
+        console.log(`[Jolpica F1 API] 🌐 Chiamata in corso: ${urlCompleto}`);
+        const risposta = await fetch(urlCompleto);
+
+        if (!risposta.ok) {
+            console.warn(`[Jolpica F1 API] ⚠️ Risposta con stato HTTP non OK (${risposta.status}) per: ${urlCompleto}`);
+            return null;
+        }
+
+        const corpoJson = await risposta.json();
+        const datiMR = corpoJson?.MRData || null;
+
+        if (datiMR && usaCache) {
+            cacheRichiesteJolpica.set(urlCompleto, datiMR);
+        }
+
+        return datiMR;
     } catch (errore) {
-        console.error(`[OpenF1 API] Errore di connessione con l'endpoint ${percorso}:`, errore.message || errore);
-        return []; // Restituisce un array vuoto in caso di errore per non bloccare l'interfaccia
+        console.error(`[Jolpica F1 API] 🚨 Errore di rete durante la richiesta a ${urlCompleto}:`, errore.message || errore);
+        return null;
     }
 }
 
 
-// ==========================================
-// FUNZIONI PER GRAN PREMI E SESSIONI
-// ==========================================
+// ======================================================================================
+// 1. FUNZIONI PER IL CALENDARIO E I GRAN PREMI
+// ======================================================================================
 
 /**
- * Recupera l'elenco di tutti i Gran Premi (meetings) disponibili per un dato anno.
- * @param {number} anno - L'anno di riferimento (es. 2024).
- * @returns {Promise<Array>} - Un array contenente i dati di tutti i Gran Premi di quell'anno.
+ * Recupera le informazioni sul PROSSIMO Gran Premio in arrivo, comprensivo di tutte le sessioni (FP1, FP2, FP3, Qualifiche, Sprint, Gara).
+ * @returns {Promise<Object|null>} - I dati della gara in arrivo o null.
  */
-async function recuperaGranPremiPerAnno(anno) {
-    return await eseguiRichiestaGenerica("/meetings", `year=${anno}`);
+async function recuperaProssimoGranPremio() {
+    const mrData = await eseguiRichiestaJolpica('/current/next.json', {}, false);
+    const gare = mrData?.RaceTable?.Races;
+    return (gare && gare.length > 0) ? gare[0] : null;
 }
 
 /**
- * Recupera l'elenco di tutte le sessioni (Prove Libere, Qualifiche, Sprint, Gara) per un dato Gran Premio.
- * @param {number} chiaveGranPremio - L'identificativo univoco del Gran Premio (meeting_key).
- * @returns {Promise<Array>} - Un array contenente i dati di tutte le sessioni di quel Gran Premio.
+ * Recupera le informazioni sull'ULTIMO Gran Premio completato (con data, circuito e vincitore).
+ * @returns {Promise<Object|null>} - I dati dell'ultima gara disputata o null.
  */
-async function recuperaSessioniPerGranPremio(chiaveGranPremio) {
-    return await eseguiRichiestaGenerica("/sessions", `meeting_key=${chiaveGranPremio}`);
-}
-
-// ==========================================
-// FUNZIONI ENDPOINT OPENF1
-// ==========================================
-
-/**
- * Recupera TUTTE le sessioni di un dato anno (utile per costruire la cronologia esatta di Sprint e Gare).
- * @param {number} anno - L'anno di riferimento (es. 2024).
- */
-async function recuperaTutteSessioniPerAnno(anno) {
-    return await eseguiRichiestaGenerica("/sessions", `year=${anno}`);
+async function recuperaUltimoGranPremio() {
+    const mrData = await eseguiRichiestaJolpica('/current/last/results.json', {}, false);
+    const gare = mrData?.RaceTable?.Races;
+    return (gare && gare.length > 0) ? gare[0] : null;
 }
 
 /**
- * Recupera la classifica Piloti aggiornata alla fine di un intero Gran Premio (Meeting).
+ * Recupera l'elenco completo di tutti i Gran Premi in programma per una data stagione (calendario ufficiale).
+ * @param {string|number} [stagione='current'] - L'anno di campionato (es. 2026, 2025, 'current').
+ * @returns {Promise<Array>} - Array contenente tutti i Gran Premi della stagione con le rispettive sessioni.
  */
-async function recuperaClassificaPilotiMeeting(chiaveMeeting) {
-    return await eseguiRichiestaGenerica("/championship_drivers", `meeting_key=${chiaveMeeting}`);
+async function recuperaCalendarioStagione(stagione = 'current') {
+    const mrData = await eseguiRichiestaJolpica(`/${stagione}.json`, { limit: 100 });
+    return mrData?.RaceTable?.Races || [];
 }
 
 /**
- * Recupera la classifica Costruttori aggiornata alla fine di un intero Gran Premio (Meeting).
+ * Recupera i dettagli specifici di un singolo Gran Premio per stagione e numero di round.
+ * @param {string|number} stagione - Anno di campionato.
+ * @param {string|number} round - Numero del round (es. 1, 12).
+ * @returns {Promise<Object|null>}
  */
-async function recuperaClassificaCostruttoriMeeting(chiaveMeeting) {
-    return await eseguiRichiestaGenerica("/championship_teams", `meeting_key=${chiaveMeeting}`);
+async function recuperaDettaglioGranPremio(stagione, round) {
+    const mrData = await eseguiRichiestaJolpica(`/${stagione}/${round}.json`);
+    const gare = mrData?.RaceTable?.Races;
+    return (gare && gare.length > 0) ? gare[0] : null;
+}
+
+
+// ======================================================================================
+// 2. FUNZIONI PER LE CLASSIFICHE MONDIALI (STANDINGS)
+// ======================================================================================
+
+/**
+ * Recupera la classifica mondiale Piloti aggiornata per una determinata stagione.
+ * @param {string|number} [stagione='current'] - Anno di riferimento (es. 'current', 2026, 2025).
+ * @returns {Promise<{stagione: string, round: string, piloti: Array}>} - Dati della classifica piloti.
+ */
+async function recuperaClassificaPiloti(stagione = 'current') {
+    const mrData = await eseguiRichiestaJolpica(`/${stagione}/driverStandings.json`, { limit: 100 }, false);
+    const standingsList = mrData?.StandingsTable?.StandingsLists?.[0];
+    return {
+        stagione: standingsList?.season || String(stagione),
+        round: standingsList?.round || '0',
+        piloti: standingsList?.DriverStandings || []
+    };
 }
 
 /**
- * Recupera la classifica Piloti aggiornata a una determinata sessione.
- * @param {number} chiaveSessione - L'identificativo della sessione (idealmente la Gara).
+ * Recupera la classifica mondiale Costruttori/Scuderie aggiornata per una determinata stagione.
+ * @param {string|number} [stagione='current'] - Anno di riferimento (es. 'current', 2026, 2025).
+ * @returns {Promise<{stagione: string, round: string, costruttori: Array}>} - Dati della classifica costruttori.
  */
-async function recuperaClassificaPiloti(chiaveSessione) {
-    return await eseguiRichiestaGenerica("/championship_drivers", `session_key=${chiaveSessione}`);
+async function recuperaClassificaCostruttori(stagione = 'current') {
+    const mrData = await eseguiRichiestaJolpica(`/${stagione}/constructorStandings.json`, { limit: 100 }, false);
+    const standingsList = mrData?.StandingsTable?.StandingsLists?.[0];
+    return {
+        stagione: standingsList?.season || String(stagione),
+        round: standingsList?.round || '0',
+        costruttori: standingsList?.ConstructorStandings || []
+    };
+}
+
+
+// ======================================================================================
+// 3. FUNZIONI PER I RISULTATI UFFICIALI DI SESSIONE
+// ======================================================================================
+
+/**
+ * Recupera i risultati completi di arrivo di una Gara (classifica finale, punti, tempo, giri veloci).
+ * @param {string|number} stagione - Anno di riferimento.
+ * @param {string|number} round - Numero del round.
+ * @returns {Promise<Array>} - Array dei risultati dei piloti al traguardo.
+ */
+async function recuperaRisultatiGara(stagione, round) {
+    const mrData = await eseguiRichiestaJolpica(`/${stagione}/${round}/results.json`, { limit: 100 });
+    const gare = mrData?.RaceTable?.Races;
+    return (gare && gare.length > 0 && gare[0].Results) ? gare[0].Results : [];
 }
 
 /**
- * Recupera la classifica Costruttori aggiornata a una determinata sessione.
- * @param {number} chiaveSessione - L'identificativo della sessione (idealmente la Gara).
+ * Recupera i risultati ufficiali delle Qualifiche (Q1, Q2, Q3, Pole Position e griglia di partenza).
+ * @param {string|number} stagione - Anno di riferimento.
+ * @param {string|number} round - Numero del round.
+ * @returns {Promise<Array>} - Array dei risultati delle qualifiche dei piloti.
  */
-async function recuperaClassificaCostruttori(chiaveSessione) {
-    return await eseguiRichiestaGenerica("/championship_teams", `session_key=${chiaveSessione}`);
+async function recuperaRisultatiQualifiche(stagione, round) {
+    const mrData = await eseguiRichiestaJolpica(`/${stagione}/${round}/qualifying.json`, { limit: 100 });
+    const gare = mrData?.RaceTable?.Races;
+    return (gare && gare.length > 0 && gare[0].QualifyingResults) ? gare[0].QualifyingResults : [];
 }
 
 /**
- * Recupera l'elenco dei piloti che hanno partecipato a una specifica sessione.
- * @param {number} chiaveSessione - L'identificativo della sessione.
+ * Recupera i risultati della Gara Sprint (se prevista nel weekend di gara).
+ * @param {string|number} stagione - Anno di riferimento.
+ * @param {string|number} round - Numero del round.
+ * @returns {Promise<Array>} - Array dei risultati della gara sprint.
  */
-async function recuperaPiloti(chiaveSessione) {
-    return await eseguiRichiestaGenerica("/drivers", `session_key=${chiaveSessione}`);
+async function recuperaRisultatiSprint(stagione, round) {
+    const mrData = await eseguiRichiestaJolpica(`/${stagione}/${round}/sprint.json`, { limit: 100 });
+    const gare = mrData?.RaceTable?.Races;
+    return (gare && gare.length > 0 && gare[0].SprintResults) ? gare[0].SprintResults : [];
+}
+
+
+// ======================================================================================
+// 4. FUNZIONI PER PILOTI, SCUDERIE E CIRCUITI
+// ======================================================================================
+
+/**
+ * Recupera l'elenco ufficiale di tutti i Piloti che hanno partecipato a una data stagione.
+ * @param {string|number} [stagione='current'] - Anno di riferimento.
+ * @returns {Promise<Array>} - Array con i dettagli anagrafici di ciascun pilota.
+ */
+async function recuperaPilotiStagione(stagione = 'current') {
+    const mrData = await eseguiRichiestaJolpica(`/${stagione}/drivers.json`, { limit: 100 });
+    return mrData?.DriverTable?.Drivers || [];
 }
 
 /**
- * Recupera tutti i giri completati (tempi e settori) in una specifica sessione.
- * @param {number} chiaveSessione - L'identificativo della sessione.
+ * Recupera l'elenco ufficiale di tutte le Scuderie/Costruttori partecipanti a una data stagione.
+ * @param {string|number} [stagione='current'] - Anno di riferimento.
+ * @returns {Promise<Array>} - Array con i dettagli di ciascun costruttore.
  */
-async function recuperaGiri(chiaveSessione) {
-    return await eseguiRichiestaGenerica("/laps", `session_key=${chiaveSessione}`);
+async function recuperaCostruttoriStagione(stagione = 'current') {
+    const mrData = await eseguiRichiestaJolpica(`/${stagione}/constructors.json`, { limit: 100 });
+    return mrData?.ConstructorTable?.Constructors || [];
 }
 
 /**
- * Recupera le posizioni in classifica dei piloti aggiornate durante la sessione.
- * @param {number} chiaveGranPremio - L'identificativo del Gran Premio.
+ * Recupera l'elenco di tutti i Circuiti su cui si gareggia in una determinata stagione.
+ * @param {string|number} [stagione='current'] - Anno di riferimento.
+ * @returns {Promise<Array>} - Array dei circuiti con coordinate geografiche e località.
  */
-async function recuperaPosizioni(chiaveGranPremio) {
-    return await eseguiRichiestaGenerica("/position", `meeting_key=${chiaveGranPremio}`);
+async function recuperaCircuitiStagione(stagione = 'current') {
+    const mrData = await eseguiRichiestaJolpica(`/${stagione}/circuits.json`, { limit: 100 });
+    return mrData?.CircuitTable?.Circuits || [];
 }
 
 /**
- * Recupera gli intervalli di tempo tra i piloti durante la sessione.
- * @param {number} chiaveSessione - L'identificativo della sessione.
+ * Recupera l'archivio di tutte le stagioni di Formula 1 disponibili nelle API.
+ * @returns {Promise<Array>} - Array degli anni disponibili.
  */
-async function recuperaIntervalli(chiaveSessione) {
-    return await eseguiRichiestaGenerica("/intervals", `session_key=${chiaveSessione}`);
-}
-
-/**
- * Recupera i dati di telemetria (velocità, marcia, giri motore, acceleratore, freno).
- * @param {number} chiaveSessione - L'identificativo della sessione.
- * @param {number} numeroVettura - Il numero di gara della vettura (es. 33 per Verstappen).
- */
-async function recuperaDatiVettura(chiaveSessione, numeroVettura) {
-    return await eseguiRichiestaGenerica("/car_data", `session_key=${chiaveSessione}&driver_number=${numeroVettura}`);
-}
-
-/**
- * Recupera le coordinate fisiche (X, Y, Z) delle vetture sul tracciato.
- * @param {number} chiaveSessione - L'identificativo della sessione.
- * @param {number} numeroVettura - Il numero di gara della vettura (es. 33 per Verstappen).
- */
-async function recuperaPosizioneInPista(chiaveSessione, numeroVettura) {
-    return await eseguiRichiestaGenerica("/location", `session_key=${chiaveSessione}&driver_number=${numeroVettura}`);
-}
-
-/**
- * Recupera le informazioni sugli stint legati agli pneumatici (mescole e durata).
- * @param {number} chiaveSessione - L'identificativo della sessione.
- */
-async function recuperaStintGomme(chiaveSessione) {
-    return await eseguiRichiestaGenerica("/stints", `session_key=${chiaveSessione}`);
-}
-
-/**
- * Recupera i dati relativi alle soste ai box (pit stop) avvenute nella sessione.
- * @param {number} chiaveSessione - L'identificativo della sessione.
- */
-async function recuperaSosteAiBox(chiaveSessione) {
-    return await eseguiRichiestaGenerica("/pit", `session_key=${chiaveSessione}`);
-}
-
-/**
- * Recupera i messaggi ufficiali della direzione gara (bandiere, safety car, penalità).
- * @param {number} chiaveSessione - L'identificativo della sessione.
- */
-async function recuperaDirezioneGara(chiaveSessione) {
-    return await eseguiRichiestaGenerica("/race_control", `session_key=${chiaveSessione}`);
-}
-
-/**
- * Recupera le trascrizioni delle comunicazioni radio tra pilota e muretto box.
- * @param {number} chiaveSessione - L'identificativo della sessione.
- */
-async function recuperaComunicazioniRadio(chiaveSessione) {
-    return await eseguiRichiestaGenerica("/team_radio", `session_key=${chiaveSessione}`);
-}
-
-/**
- * Recupera le misurazioni meteorologiche (temperatura, umidità, pioggia) della sessione.
- * @param {number} chiaveSessione - L'identificativo della sessione.
- */
-async function recuperaDatiMeteo(chiaveSessione) {
-    return await eseguiRichiestaGenerica("/weather", `session_key=${chiaveSessione}`);
-}
-
-/**
- * Recupera i dettagli anagrafici della sessione stessa (nome, orari di inizio e fine).
- * @param {number} chiaveSessione - L'identificativo della sessione.
- */
-async function recuperaDettagliSessione(chiaveSessione) {
-    return await eseguiRichiestaGenerica("/sessions", `session_key=${chiaveSessione}`);
+async function recuperaStagioniDisponibili() {
+    const mrData = await eseguiRichiestaJolpica('/seasons.json', { limit: 100 });
+    const stagioni = mrData?.SeasonTable?.Seasons || [];
+    return stagioni.map(s => Number(s.season)).sort((a, b) => b - a);
 }
