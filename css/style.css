@@ -1,7 +1,78 @@
+/* css/style.css - Pitwall Stats */
+
+/* Effetto elevazione al passaggio del mouse */
 .hover-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .hover-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.15) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12) !important;
 }
+
+/* Card Hero in stile Formula 1 con gradiente rosso racing */
+.hero-f1-card {
+    background: linear-gradient(135deg, #b71c1c 0%, #7f0000 60%, #1a1a1a 100%) !important;
+    border-radius: 16px !important;
+    border-left: 6px solid #ff1744 !important;
+}
+
+/* Blocchi digitali del Countdown */
+.countdown-blocco {
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 10px 14px;
+    min-width: 72px;
+    text-align: center;
+}
+
+@media (min-width: 600px) {
+    .countdown-blocco {
+        min-width: 90px;
+        padding: 12px 18px;
+    }
+}
+
+.countdown-cifra {
+    font-size: 1.8rem;
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: 1px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@media (min-width: 600px) {
+    .countdown-cifra {
+        font-size: 2.3rem;
+    }
+}
+
+.countdown-etichetta {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 4px;
+}
+
+/* Bordi indicatori di stato per le sessioni */
+.border-left-live {
+    border-left: 5px solid #4CAF50 !important;
+    background: rgba(76, 175, 80, 0.04) !important;
+}
+
+.border-left-upcoming {
+    border-left: 5px solid #b71c1c !important;
+}
+
+/* Animazione pulsante per indicatori live */
+@keyframes pulsazione {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.85; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.pulse-animation {
+    animation: pulsazione 1.5s infinite ease-in-out;
+}

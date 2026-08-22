@@ -7,30 +7,43 @@
 const INDIRIZZO_BASE_API = "https://api.openf1.org/v1";
 
 /**
- * Funzione di utilità per creare una pausa (anti Rate-Limit)
+ * Funzione di utilità per creare una breve pausa (se necessaria per evitare rate-limit)
  * @param {number} ms - Millisecondi di attesa
  */
 const attendi = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * Funzione di supporto interna per eseguire la richiesta HTTP e gestire gli errori.
- * @param {string} percorso - L'endpoint specifico (es. '/laps').
- * @param {number} chiaveSessione - L'identificativo univoco della sessione.
- * @returns {Promise<Array|Object>} - I dati restituiti dall'API in formato JSON.
+ * Gestisce esplicitamente i casi di errore HTTP (es. 401 per sessione live OpenF1, 429 per rate-limit).
+ * 
+ * @param {string} percorso - L'endpoint specifico (es. '/meetings', '/sessions').
+ * @param {string} query - I parametri di query string (es. 'year=2024').
+ * @returns {Promise<Array|Object>} - I dati restituiti dall'API in formato JSON oppure array vuoto in caso di errore.
  */
 async function eseguiRichiestaGenerica(percorso, query) {
-    const urlCorrente = `${INDIRIZZO_BASE_API}${percorso}?${query}`;
-    await attendi(1000);
+    const separatore = query ? (query.startsWith('?') ? '' : '?') : '';
+    const urlCorrente = `${INDIRIZZO_BASE_API}${percorso}${separatore}${query || ''}`;
     
     try {
         const risposta = await fetch(urlCorrente);
+        
+        // Se lo status non è OK, esamina il codice di risposta
         if (!risposta.ok) {
-            throw new Error(`Errore di rete durante la chiamata a ${percorso}: ${risposta.status}`);
+            if (risposta.status === 401) {
+                // OpenF1 restituisce 401 quando c'è una sessione live in corso e l'utente non ha una chiave a pagamento
+                console.warn(`[OpenF1 API] Accesso limitato (HTTP 401) per "${percorso}": Sessione Live in corso o richiesta autenticazione.`);
+            } else if (risposta.status === 429) {
+                console.warn(`[OpenF1 API] Rate limit raggiunto (HTTP 429) per "${percorso}".`);
+            } else {
+                console.warn(`[OpenF1 API] Errore di risposta HTTP ${risposta.status} per "${percorso}".`);
+            }
+            return [];
         }
+        
         const dati = await risposta.json();
-        return dati;
+        return Array.isArray(dati) ? dati : (dati && typeof dati === 'object' ? dati : []);
     } catch (errore) {
-        console.error(`Si è verificato un problema con l'endpoint ${percorso}:`, errore);
+        console.error(`[OpenF1 API] Errore di connessione con l'endpoint ${percorso}:`, errore.message || errore);
         return []; // Restituisce un array vuoto in caso di errore per non bloccare l'interfaccia
     }
 }

@@ -1,31 +1,33 @@
 
 function recuperaSessioniAnnoCorrente() {
-    sessioni_anno_corrente = recuperaTutteSessioniPerAnno(new Date().getFullYear());
+    const sessioni_anno_corrente = recuperaTutteSessioniPerAnno(new Date().getFullYear());
     return sessioni_anno_corrente;
 }
 
 function recuperaPrimaFuturaSessione(){
     return recuperaTutteSessioniPerAnno(new Date().getFullYear()).then(sessioni => {
+        if (!Array.isArray(sessioni)) return null;
         const sessioniFuture = sessioni.filter(sessione => {
             const dataInizio = Date.parse(sessione.date_start || '');
             return dataInizio > Date.now();
         });
-        return sessioniFuture[0];
+        return sessioniFuture[0] || null;
     });
 }
 
 function recuperaGranPremiAnnoCorrente() {
-    gran_premi_anno_corrente = recuperaGranPremiPerAnno(new Date().getFullYear());
+    const gran_premi_anno_corrente = recuperaGranPremiPerAnno(new Date().getFullYear());
     return gran_premi_anno_corrente;
 }
 
 function recuperaPrimoFuturoGranPremio(){
     return recuperaGranPremiPerAnno(new Date().getFullYear()).then(gran_premi => {
+        if (!Array.isArray(gran_premi)) return null;
         const gran_premiFuturi = gran_premi.filter(sessione => {
             const dataInizio = Date.parse(sessione.date_start || '');
             return dataInizio > Date.now();
         });
-        return gran_premiFuturi[0];
+        return gran_premiFuturi[0] || null;
     });
 }
 
