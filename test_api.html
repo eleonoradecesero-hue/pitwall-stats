@@ -3,151 +3,589 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test API Completo OpenF1</title>
-    <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #1e1e1e; 
-            color: #d4d4d4; 
-            padding: 20px; 
-            line-height: 1.6;
-        }
-        h1 { color: #569cd6; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .messaggio-info { color: #9cdcfe; margin-top: 15px; font-weight: bold; }
-        .messaggio-successo { color: #4CAF50; font-weight: bold; padding-left: 15px; margin-top: 5px; }
-        .messaggio-avviso { color: #FFC107; font-weight: bold; padding-left: 15px; margin-top: 5px; }
-        .messaggio-errore { color: #f44336; font-weight: bold; padding-left: 15px; margin-top: 5px; }
-        .pannello-log { 
-            background: #0d0d0d; 
-            padding: 20px; 
-            border-radius: 8px; 
-            height: 80vh; 
-            overflow-y: auto; 
-            border: 1px solid #333;
-        }
-        .messaggio-dettaglio { color: #cecece; padding-left: 40px; font-size: 0.9em; font-style: italic; }
-        
-        /* Nuovo stile per i blocchi JSON */
-        .blocco-json {
-            background-color: #1e1e1e;
-            border: 1px solid #333;
-            border-left: 4px solid #569cd6;
-            color: #cecece;
-            padding: 15px;
-            margin: 10px 0 15px 40px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.85em;
-            border-radius: 4px;
-            white-space: pre-wrap; /* Permette di andare a capo se le righe sono troppo lunghe */
-            word-wrap: break-word;
-            max-height: 400px;
-            overflow-y: auto; /* Aggiunge una scrollbar interna se il JSON è molto lungo */
-        }
-    </style>
+    <title>Jolpica-F1 API Health & Diagnostics Dashboard — Pitwall Stats</title>
+    <!-- Font e Icone -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="css/test_api.css">
 </head>
 <body>
 
-    <h1>🛠️ Esecuzione Test API Completo OpenF1</h1>
-    <p>Questo file verifica tutte le funzioni presenti in <code>api.js</code>.</p>    
-    <div id="pannello-log" class="pannello-log"></div>
+    <!-- HEADER DASHBOARD -->
+    <div class="dashboard-header">
+        <div class="header-title">
+            <h1><i class="mdi mdi-car-speed-limiter"></i> Jolpica-F1 API Diagnostics Hub</h1>
+            <p>Pannello di controllo e diagnostica in tempo reale per tutte le chiamate API e i servizi di Pitwall Stats</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="avviaTuttiITest()"><i class="mdi mdi-play"></i> Esegui Tutti i Test</button>
+            <button class="btn btn-outline" onclick="pulisciRisultati()"><i class="mdi mdi-refresh"></i> Reset</button>
+        </div>
+    </div>
 
+    <!-- STATS / KPI CARDS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-label">Endpoint Totali</span>
+            <span class="stat-value stat-total" id="kpi-totale">23</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Completati con Successo</span>
+            <span class="stat-value stat-success" id="kpi-successi">0</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Avvisi / Dati Parziali</span>
+            <span class="stat-value stat-warning" id="kpi-avvisi">0</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Errori Rilevati</span>
+            <span class="stat-value stat-error" id="kpi-errori">0</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Tempo di Esecuzione</span>
+            <span class="stat-value stat-time" id="kpi-tempo">0.0s</span>
+        </div>
+    </div>
+
+    <!-- FILTRI CATEGORIA -->
+    <div class="category-filters">
+        <button class="filter-btn active" onclick="filtraCategoria('tutti', this)">Tutti i Test (23)</button>
+        <button class="filter-btn" onclick="filtraCategoria('calendario', this)">📅 Calendario & GP (6)</button>
+        <button class="filter-btn" onclick="filtraCategoria('classifiche', this)">🏆 Classifiche Mondiali (6)</button>
+        <button class="filter-btn" onclick="filtraCategoria('risultati', this)">🏁 Risultati di Gara (4)</button>
+        <button class="filter-btn" onclick="filtraCategoria('anagrafiche', this)">🏎️ Piloti, Team & Circuiti (4)</button>
+        <button class="filter-btn" onclick="filtraCategoria('servizi', this)">⚙️ Servizi Applicativi (3)</button>
+    </div>
+
+    <!-- CONTENITORE PRINCIPALE DEI TEST -->
+    <div id="contenitore-test"></div>
+
+    <!-- SCRIPT DEL PROGETTO DA TESTARE -->
     <script src="js/api.js"></script>
     <script src="js/utility.js"></script>
+    <script src="js/servizi/classifica_service.js"></script>
     <script src="js/servizi/home_service.js"></script>
+    <script src="js/servizi/panoramica_service.js"></script>
 
+    <!-- TEST RUNNER LOGIC -->
     <script>
-        const contenitoreLog = document.getElementById('pannello-log');
-
-        function scriviLog(messaggio, tipoCSS = 'messaggio-info') {
-            const paragrafo = document.createElement('div');
-            paragrafo.className = tipoCSS;
-            paragrafo.innerText = messaggio;
-            contenitoreLog.appendChild(paragrafo);
-            contenitoreLog.scrollTop = contenitoreLog.scrollHeight; 
-            console.log(messaggio);
-        }
-
-        // Nuova funzione dedicata per stampare il JSON formattato
-        function scriviJSON(oggettoDati) {
-            const bloccoPre = document.createElement('pre');
-            bloccoPre.className = 'blocco-json';
-            // Formatta il JSON con 4 spazi di indentazione
-            bloccoPre.innerText = JSON.stringify(oggettoDati, null, 4);
-            contenitoreLog.appendChild(bloccoPre);
-            contenitoreLog.scrollTop = contenitoreLog.scrollHeight;
-        }
-
-        async function eseguiTestSingolo(nomeFunzione, operazionePromise) {
-            await attendi(1000); 
-            scriviLog(`> Test: ${nomeFunzione}...`, 'messaggio-info');
-            try {
-                const risultato = await operazionePromise;
-                
-                if (Array.isArray(risultato)) {
-                    if (risultato.length > 0) {
-                        scriviLog(`✅ Successo: Ricevuti ${risultato.length} elementi.`, 'messaggio-successo');
-                        
-                        const primoElemento = risultato[0];
-                        scriviLog(`📄 Struttura JSON del primo elemento:`, 'messaggio-dettaglio');
-                        scriviJSON(primoElemento); // Stampa il JSON ben formattato
-
-                        return risultato;
-                    } else {
-                        scriviLog(`⚠️ Avviso: L'API ha risposto con successo, ma non ci sono dati (array vuoto).`, 'messaggio-avviso');
-                        scriviJSON([]); // Mostra array vuoto
-                        return risultato;
-                    }
-                } else if (risultato && typeof risultato === 'object') {
-                    scriviLog(`✅ Successo: Ricevuto oggetto dati singolo.`, 'messaggio-successo');
-                    scriviLog(`📄 Struttura JSON dell'oggetto:`, 'messaggio-dettaglio');
-                    scriviJSON(risultato); // Stampa l'intero oggetto formattato
-                    return risultato;
-                } else {
-                    scriviLog(`❌ Errore: Formato dati inatteso.`, 'messaggio-errore');
-                    return null;
+        // Definizione completa di tutte le 23 suite di test su Jolpica F1 API
+        const SUITE_TEST = [
+            // =========================================================================
+            // CATEGORIA 1: CALENDARIO & GRAN PREMI
+            // =========================================================================
+            {
+                id: 'gp-prossimo',
+                categoria: 'calendario',
+                categoriaNome: '📅 Calendario & Gran Premi',
+                nome: 'recuperaProssimoGranPremio()',
+                endpoint: 'GET /current/next.json',
+                descrizione: 'Recupera il prossimo Gran Premio in programma con orari di tutte le sessioni live',
+                esegui: () => recuperaProssimoGranPremio(),
+                analizza: (d) => {
+                    if (!d) return { status: 'warning', msg: 'Nessun Gran Premio futuro trovato (fine stagione).' };
+                    return { status: 'success', msg: `GP Trovato: ${d.raceName} (${d.season} - Round ${d.round}) • Data Gara: ${d.date}` };
                 }
-            } catch (errore) {
-                scriviLog(`🚨 Fallito: Eccezione durante la chiamata (${errore.message})`, 'messaggio-errore');
-                return null;
+            },
+            {
+                id: 'gp-ultimo',
+                categoria: 'calendario',
+                categoriaNome: '📅 Calendario & Gran Premi',
+                nome: 'recuperaUltimoGranPremio()',
+                endpoint: 'GET /current/last/results.json',
+                descrizione: 'Recupera l\'ultimo Gran Premio concluso con il vincitore',
+                esegui: () => recuperaUltimoGranPremio(),
+                analizza: (d) => {
+                    if (!d) return { status: 'warning', msg: 'Nessun dato sull\'ultimo Gran Premio.' };
+                    const vincitore = d.Results?.[0]?.Driver?.familyName || 'N/D';
+                    const team = d.Results?.[0]?.Constructor?.name || 'N/D';
+                    return { status: 'success', msg: `Ultima Gara: ${d.raceName} • Vincitore: ${vincitore} (${team})` };
+                }
+            },
+            {
+                id: 'cal-current',
+                categoria: 'calendario',
+                categoriaNome: '📅 Calendario & Gran Premi',
+                nome: 'recuperaCalendarioStagione("current")',
+                endpoint: 'GET /current.json',
+                descrizione: 'Recupera il calendario completo della stagione corrente',
+                esegui: () => recuperaCalendarioStagione('current'),
+                analizza: (d) => {
+                    if (!d || d.length === 0) return { status: 'error', msg: 'Calendario corrente vuoto o non disponibile.' };
+                    return { status: 'success', msg: `Trovati ${d.length} Gran Premi in programma per la stagione corrente` };
+                }
+            },
+            {
+                id: 'cal-2025',
+                categoria: 'calendario',
+                categoriaNome: '📅 Calendario & Gran Premi',
+                nome: 'recuperaCalendarioStagione(2025)',
+                endpoint: 'GET /2025.json',
+                descrizione: 'Recupera il calendario completo della stagione 2025',
+                esegui: () => recuperaCalendarioStagione(2025),
+                analizza: (d) => {
+                    if (!d || d.length === 0) return { status: 'warning', msg: 'Calendario 2025 vuoto.' };
+                    return { status: 'success', msg: `Trovati ${d.length} Gran Premi per la stagione 2025` };
+                }
+            },
+            {
+                id: 'cal-2024',
+                categoria: 'calendario',
+                categoriaNome: '📅 Calendario & Gran Premi',
+                nome: 'recuperaCalendarioStagione(2024)',
+                endpoint: 'GET /2024.json',
+                descrizione: 'Recupera il calendario completo della stagione 2024',
+                esegui: () => recuperaCalendarioStagione(2024),
+                analizza: (d) => {
+                    if (!d || d.length === 0) return { status: 'error', msg: 'Calendario 2024 vuoto.' };
+                    return { status: 'success', msg: `Trovati ${d.length} Gran Premi per la stagione 2024` };
+                }
+            },
+            {
+                id: 'gp-dettaglio',
+                categoria: 'calendario',
+                categoriaNome: '📅 Calendario & Gran Premi',
+                nome: 'recuperaDettaglioGranPremio(2026, 11)',
+                endpoint: 'GET /2026/11.json',
+                descrizione: 'Recupera i dettagli del singolo Gran Premio (Round 11 - 2026)',
+                esegui: () => recuperaDettaglioGranPremio(2026, 11),
+                analizza: (d) => {
+                    if (!d) return { status: 'warning', msg: 'Dettaglio round 11 non disponibile.' };
+                    return { status: 'success', msg: `${d.raceName} • Circuito: ${d.Circuit?.circuitName} (${d.Circuit?.Location?.country})` };
+                }
+            },
+
+            // =========================================================================
+            // CATEGORIA 2: CLASSIFICHE MONDIALI
+            // =========================================================================
+            {
+                id: 'standings-piloti-current',
+                categoria: 'classifiche',
+                categoriaNome: '🏆 Classifiche Mondiali',
+                nome: 'recuperaClassificaPiloti("current")',
+                endpoint: 'GET /current/driverStandings.json',
+                descrizione: 'Classifica Mondiale Piloti in tempo reale per la stagione corrente',
+                esegui: () => recuperaClassificaPiloti('current'),
+                analizza: (d) => {
+                    const list = d?.piloti || [];
+                    if (list.length === 0) return { status: 'warning', msg: 'Nessun pilota in classifica.' };
+                    const leader = list[0];
+                    return { status: 'success', msg: `Trovati ${list.length} piloti • Leader: ${leader.Driver.givenName} ${leader.Driver.familyName} (${leader.points} pt, ${leader.wins} vittorie)` };
+                }
+            },
+            {
+                id: 'standings-piloti-2025',
+                categoria: 'classifiche',
+                categoriaNome: '🏆 Classifiche Mondiali',
+                nome: 'recuperaClassificaPiloti(2025)',
+                endpoint: 'GET /2025/driverStandings.json',
+                descrizione: 'Classifica Mondiale Piloti per la stagione 2025',
+                esegui: () => recuperaClassificaPiloti(2025),
+                analizza: (d) => {
+                    const list = d?.piloti || [];
+                    return { status: list.length > 0 ? 'success' : 'warning', msg: `Trovati ${list.length} piloti per la stagione 2025` };
+                }
+            },
+            {
+                id: 'standings-piloti-2024',
+                categoria: 'classifiche',
+                categoriaNome: '🏆 Classifiche Mondiali',
+                nome: 'recuperaClassificaPiloti(2024)',
+                endpoint: 'GET /2024/driverStandings.json',
+                descrizione: 'Classifica Mondiale Piloti per la stagione 2024 (Storico)',
+                esegui: () => recuperaClassificaPiloti(2024),
+                analizza: (d) => {
+                    const list = d?.piloti || [];
+                    if (list.length === 0) return { status: 'error', msg: 'Classifica 2024 non trovata.' };
+                    return { status: 'success', msg: `Classifica 2024: ${list.length} piloti • Campione: ${list[0]?.Driver?.familyName} (${list[0]?.points} pt)` };
+                }
+            },
+            {
+                id: 'standings-team-current',
+                categoria: 'classifiche',
+                categoriaNome: '🏆 Classifiche Mondiali',
+                nome: 'recuperaClassificaCostruttori("current")',
+                endpoint: 'GET /current/constructorStandings.json',
+                descrizione: 'Classifica Mondiale Costruttori/Scuderie in tempo reale',
+                esegui: () => recuperaClassificaCostruttori('current'),
+                analizza: (d) => {
+                    const list = d?.costruttori || [];
+                    if (list.length === 0) return { status: 'warning', msg: 'Nessun costruttore in classifica.' };
+                    const leader = list[0];
+                    return { status: 'success', msg: `Trovati ${list.length} costruttori • Leader: ${leader.Constructor.name} (${leader.points} pt, ${leader.wins} vittorie)` };
+                }
+            },
+            {
+                id: 'standings-team-2025',
+                categoria: 'classifiche',
+                categoriaNome: '🏆 Classifiche Mondiali',
+                nome: 'recuperaClassificaCostruttori(2025)',
+                endpoint: 'GET /2025/constructorStandings.json',
+                descrizione: 'Classifica Mondiale Costruttori per la stagione 2025',
+                esegui: () => recuperaClassificaCostruttori(2025),
+                analizza: (d) => {
+                    const list = d?.costruttori || [];
+                    return { status: list.length > 0 ? 'success' : 'warning', msg: `Trovati ${list.length} costruttori per il 2025` };
+                }
+            },
+            {
+                id: 'standings-team-2024',
+                categoria: 'classifiche',
+                categoriaNome: '🏆 Classifiche Mondiali',
+                nome: 'recuperaClassificaCostruttori(2024)',
+                endpoint: 'GET /2024/constructorStandings.json',
+                descrizione: 'Classifica Mondiale Costruttori per la stagione 2024 (Storico)',
+                esegui: () => recuperaClassificaCostruttori(2024),
+                analizza: (d) => {
+                    const list = d?.costruttori || [];
+                    if (list.length === 0) return { status: 'error', msg: 'Classifica costruttori 2024 non trovata.' };
+                    return { status: 'success', msg: `Costruttori 2024: ${list.length} team • Vincitore: ${list[0]?.Constructor?.name} (${list[0]?.points} pt)` };
+                }
+            },
+
+            // =========================================================================
+            // CATEGORIA 3: RISULTATI UFFICIALI DI SESSIONE
+            // =========================================================================
+            {
+                id: 'results-race-current',
+                categoria: 'risultati',
+                categoriaNome: '🏁 Risultati di Sessione',
+                nome: 'recuperaRisultatiGara("current", 11)',
+                endpoint: 'GET /current/11/results.json',
+                descrizione: 'Ordine d\'arrivo ufficiale della Gara (Round 11 - stagione in corso)',
+                esegui: () => recuperaRisultatiGara('current', 11),
+                analizza: (d) => {
+                    if (!d || d.length === 0) return { status: 'warning', msg: 'Risultati per il round 11 non ancora disputati o assenti.' };
+                    return { status: 'success', msg: `Arrivati ${d.length} piloti • 1°: ${d[0]?.Driver?.familyName} (${d[0]?.Time?.time || 'Vincitore'})` };
+                }
+            },
+            {
+                id: 'results-race-2024',
+                categoria: 'risultati',
+                categoriaNome: '🏁 Risultati di Sessione',
+                nome: 'recuperaRisultatiGara(2024, 1)',
+                endpoint: 'GET /2024/1/results.json',
+                descrizione: 'Ordine d\'arrivo ufficiale del Gran Premio del Bahrain 2024',
+                esegui: () => recuperaRisultatiGara(2024, 1),
+                analizza: (d) => {
+                    if (!d || d.length === 0) return { status: 'error', msg: 'Risultati gara 2024-1 non trovati.' };
+                    return { status: 'success', msg: `Classifica completa con ${d.length} piloti • 1°: ${d[0]?.Driver?.givenName} ${d[0]?.Driver?.familyName}` };
+                }
+            },
+            {
+                id: 'results-quali-2024',
+                categoria: 'risultati',
+                categoriaNome: '🏁 Risultati di Sessione',
+                nome: 'recuperaRisultatiQualifiche(2024, 1)',
+                endpoint: 'GET /2024/1/qualifying.json',
+                descrizione: 'Risultati ufficiali Qualifiche con tempi Q1, Q2, Q3 (Round 1 - 2024)',
+                esegui: () => recuperaRisultatiQualifiche(2024, 1),
+                analizza: (d) => {
+                    if (!d || d.length === 0) return { status: 'error', msg: 'Qualifiche 2024-1 non trovate.' };
+                    return { status: 'success', msg: `Pole Position: ${d[0]?.Driver?.familyName} (${d[0]?.Q3 || d[0]?.Q2}) • ${d.length} qualificati` };
+                }
+            },
+            {
+                id: 'results-sprint-2024',
+                categoria: 'risultati',
+                categoriaNome: '🏁 Risultati di Sessione',
+                nome: 'recuperaRisultatiSprint(2024, 5)',
+                endpoint: 'GET /2024/5/sprint.json',
+                descrizione: 'Risultati della Gara Sprint (Cina 2024 - Round 5)',
+                esegui: () => recuperaRisultatiSprint(2024, 5),
+                analizza: (d) => {
+                    if (!d || d.length === 0) return { status: 'warning', msg: 'Risultati Sprint round 5 non disponibili.' };
+                    return { status: 'success', msg: `Vincitore Sprint: ${d[0]?.Driver?.familyName} (${d[0]?.Constructor?.name}) • ${d.length} piloti` };
+                }
+            },
+
+            // =========================================================================
+            // CATEGORIA 4: ANAGRAFICHE PILOTI, SCUDERIE E CIRCUITI
+            // =========================================================================
+            {
+                id: 'drivers-list',
+                categoria: 'anagrafiche',
+                categoriaNome: '🏎️ Piloti, Team & Circuiti',
+                nome: 'recuperaPilotiStagione("current")',
+                endpoint: 'GET /current/drivers.json',
+                descrizione: 'Elenco anagrafico ufficiale di tutti i piloti registrati per la stagione in corso',
+                esegui: () => recuperaPilotiStagione('current'),
+                analizza: (d) => {
+                    if (!d || d.length === 0) return { status: 'error', msg: 'Nessun pilota registrato.' };
+                    return { status: 'success', msg: `Trovati ${d.length} piloti ufficiali registrati` };
+                }
+            },
+            {
+                id: 'constructors-list',
+                categoria: 'anagrafiche',
+                categoriaNome: '🏎️ Piloti, Team & Circuiti',
+                nome: 'recuperaCostruttoriStagione("current")',
+                endpoint: 'GET /current/constructors.json',
+                descrizione: 'Elenco ufficiale di tutte le scuderie registrate per la stagione in corso',
+                esegui: () => recuperaCostruttoriStagione('current'),
+                analizza: (d) => {
+                    if (!d || d.length === 0) return { status: 'error', msg: 'Nessuna scuderia registrata.' };
+                    return { status: 'success', msg: `Trovate ${d.length} scuderie ufficiali registrate` };
+                }
+            },
+            {
+                id: 'circuits-list',
+                categoria: 'anagrafiche',
+                categoriaNome: '🏎️ Piloti, Team & Circuiti',
+                nome: 'recuperaCircuitiStagione("current")',
+                endpoint: 'GET /current/circuits.json',
+                descrizione: 'Elenco ufficiale di tutti i circuiti mondiali con coordinate GPS',
+                esegui: () => recuperaCircuitiStagione('current'),
+                analizza: (d) => {
+                    if (!d || d.length === 0) return { status: 'error', msg: 'Nessun circuito registrato.' };
+                    return { status: 'success', msg: `Trovati ${d.length} circuiti mondiali` };
+                }
+            },
+            {
+                id: 'seasons-archive',
+                categoria: 'anagrafiche',
+                categoriaNome: '🏎️ Piloti, Team & Circuiti',
+                nome: 'recuperaStagioniDisponibili()',
+                endpoint: 'GET /seasons.json',
+                descrizione: 'Archivio storico delle stagioni F1 disponibili nelle API',
+                esegui: () => recuperaStagioniDisponibili(),
+                analizza: (d) => {
+                    if (!d || d.length === 0) return { status: 'error', msg: 'Nessuna stagione disponibile.' };
+                    return { status: 'success', msg: `Archivio F1 dal ${d[d.length - 1]} al ${d[0]} (${d.length} stagioni storiche)` };
+                }
+            },
+
+            // =========================================================================
+            // CATEGORIA 5: SERVIZI APPLICATIVI PITWALL STATS
+            // =========================================================================
+            {
+                id: 'service-home',
+                categoria: 'servizi',
+                categoriaNome: '⚙️ Servizi Applicativi',
+                nome: 'HomeService.recuperaDatiHome()',
+                endpoint: 'Logica Home + Countdown Dinamico',
+                descrizione: 'Orchestrazione del prossimo Gran Premio, estrazione di tutte le sessioni e calcolo del target countdown',
+                esegui: () => HomeService.recuperaDatiHome(),
+                analizza: (d) => {
+                    if (!d || !d.prossimaGara) return { status: 'error', msg: 'Dati Home non generati.' };
+                    const gp = d.prossimaGara;
+                    return { status: 'success', msg: `GP: ${gp.nome} (${gp.bandiera}) • Target: ${gp.etichettaTarget} • Sessioni trovate: ${d.sessioni.length}` };
+                }
+            },
+            {
+                id: 'service-classifica',
+                categoria: 'servizi',
+                categoriaNome: '⚙️ Servizi Applicativi',
+                nome: 'ClassificaService.recuperaClassifiche("current")',
+                endpoint: 'Classifiche Piloti + Costruttori Arricchite',
+                descrizione: 'Recupero simultaneo di classifiche piloti e costruttori con foto, colori scuderie e calcolo distacchi',
+                esegui: () => ClassificaService.recuperaClassifiche('current'),
+                analizza: (d) => {
+                    if (!d || !d.piloti || !d.scuderie) return { status: 'error', msg: 'Errore generazione classifiche.' };
+                    return { status: 'success', msg: `Elaborati ${d.piloti.length} piloti e ${d.scuderie.length} costruttori • Leader: ${d.piloti[0]?.nome}` };
+                }
+            },
+            {
+                id: 'service-panoramica',
+                categoria: 'servizi',
+                categoriaNome: '⚙️ Servizi Applicativi',
+                nome: 'PanoramicaService.carica("current")',
+                endpoint: 'Panoramica Griglia e Statistiche Avanzate',
+                descrizione: 'Elaborazione delle statistiche avanzate (vittorie, podi, pole position, giri veloci) per piloti e scuderie',
+                esegui: () => PanoramicaService.carica('current'),
+                analizza: (d) => {
+                    if (!d || !d.piloti || !d.scuderie) return { status: 'error', msg: 'Errore panoramica.' };
+                    return { status: 'success', msg: `Calcolate statistiche per ${d.piloti.length} piloti e ${d.scuderie.length} scuderie` };
+                }
+            }
+        ];
+
+        // Raggruppa i test per categoria
+        function renderizzaInterfaccia() {
+            const contenitore = document.getElementById('contenitore-test');
+            contenitore.innerHTML = '';
+
+            const categorie = {};
+            SUITE_TEST.forEach(t => {
+                if (!categorie[t.categoria]) {
+                    categorie[t.categoria] = { nome: t.categoriaNome, test: [] };
+                }
+                categorie[t.categoria].test.push(t);
+            });
+
+            for (const [chiave, cat] of Object.entries(categorie)) {
+                const section = document.createElement('div');
+                section.className = 'test-section';
+                section.dataset.categoria = chiave;
+
+                const title = document.createElement('div');
+                title.className = 'section-title';
+                title.innerText = cat.nome;
+                section.appendChild(title);
+
+                cat.test.forEach(t => {
+                    const card = document.createElement('div');
+                    card.className = 'test-card status-pending';
+                    card.id = `card-${t.id}`;
+                    card.dataset.categoria = t.categoria;
+
+                    card.innerHTML = `
+                        <div class="test-header" onclick="toggleDettaglio('${t.id}')">
+                            <div class="test-info">
+                                <span class="status-badge badge-pending" id="badge-${t.id}">IN ATTESA</span>
+                                <div>
+                                    <div class="test-name">${t.nome}</div>
+                                    <span class="test-endpoint">${t.endpoint}</span>
+                                </div>
+                            </div>
+                            <div class="test-meta">
+                                <span class="test-latency" id="latency-${t.id}"><i class="mdi mdi-clock-outline"></i> -- ms</span>
+                                <i class="mdi mdi-chevron-down" id="chevron-${t.id}"></i>
+                            </div>
+                        </div>
+                        <div class="test-summary" id="summary-${t.id}">
+                            <span>${t.descrizione}</span>
+                            <button class="btn-copy" onclick="event.stopPropagation(); eseguiSingoloTest('${t.id}')"><i class="mdi mdi-play"></i> Rilancia Test</button>
+                        </div>
+                        <div class="test-details" id="details-${t.id}">
+                            <div class="json-actions">
+                                <button class="btn-copy" onclick="copiaJSON('${t.id}')"><i class="mdi mdi-content-copy"></i> Copia JSON</button>
+                            </div>
+                            <pre class="json-viewer" id="json-${t.id}">In attesa di esecuzione...</pre>
+                        </div>
+                    `;
+
+                    section.appendChild(card);
+                });
+
+                contenitore.appendChild(section);
             }
         }
 
-        async function avviaTestCompleto() {
-            scriviLog("=== INIZIO TEST API PITWALL STATS ===");
-
-            // Test 1: HomeService Orchestratore Multi-Provider
-            scriviLog("\n--- 1. TEST SERVIZIO HOME (MULTI-PROVIDER RESILIENTE) ---", 'messaggio-info');
-            const datiHome = await eseguiTestSingolo("HomeService.recuperaDatiHome()", HomeService.recuperaDatiHome());
-            if (datiHome && datiHome.prossimaGara) {
-                scriviLog(`🏁 GP Individuato: ${datiHome.prossimaGara.nome} (${datiHome.prossimaGara.bandiera})`, 'messaggio-successo');
-                scriviLog(`📍 Circuito: ${datiHome.prossimaGara.circuito}`, 'messaggio-dettaglio');
-                scriviLog(`⏱️ Target Countdown: ${datiHome.prossimaGara.etichettaTarget} (${datiHome.prossimaGara.targetCountdown})`, 'messaggio-successo');
-                scriviLog(`📡 Sorgente Dati: ${datiHome.sorgenteDati}`, 'messaggio-avviso');
-                scriviLog(`📅 Numero Sessioni: ${datiHome.sessioni.length}`, 'messaggio-dettaglio');
-            }
-
-            // Test 2: OpenF1 API Diretta
-            scriviLog("\n--- 2. TEST ENDPOINT DIRETTI OPENF1 API ---", 'messaggio-info');
-            const listaGranPremi = await eseguiTestSingolo("recuperaGranPremiPerAnno(2024)", recuperaGranPremiPerAnno(2024));
-            
-            if (listaGranPremi && listaGranPremi.length > 0) {
-                const chiaveGranPremio = listaGranPremi[0].meeting_key;
-                await eseguiTestSingolo(`recuperaSessioniPerGranPremio(${chiaveGranPremio})`, recuperaSessioniPerGranPremio(chiaveGranPremio));
-                await eseguiTestSingolo("recuperaPosizioni", recuperaPosizioni(chiaveGranPremio));
+        function toggleDettaglio(testId) {
+            const details = document.getElementById(`details-${testId}`);
+            const chevron = document.getElementById(`chevron-${testId}`);
+            if (details.classList.contains('open')) {
+                details.classList.remove('open');
+                chevron.className = 'mdi mdi-chevron-down';
             } else {
-                scriviLog("ℹ️ Nota: OpenF1 non ha restituito meeting (possibile sessione live in corso o rate-limit). Il sistema di fallback gestisce questa condizione automaticamente.", 'messaggio-avviso');
+                details.classList.add('open');
+                chevron.className = 'mdi mdi-chevron-up';
             }
-
-            // Test 3: Funzioni di Utility
-            scriviLog("\n--- 3. TEST UTILITY ---", 'messaggio-info');
-            await eseguiTestSingolo("recuperaSessioniAnnoCorrente", recuperaSessioniAnnoCorrente());
-            await eseguiTestSingolo("recuperaGranPremiAnnoCorrente", recuperaGranPremiAnnoCorrente());
-
-            scriviLog("\n🎉 === TUTTI I TEST COMPLETATI CON SUCCESSO ===", 'messaggio-successo');
         }
 
-        // Avvia i test al caricamento
-        avviaTestCompleto();
+        function copiaJSON(testId) {
+            const jsonText = document.getElementById(`json-${testId}`).innerText;
+            navigator.clipboard.writeText(jsonText).then(() => {
+                alert('JSON copiato negli appunti!');
+            });
+        }
+
+        function filtraCategoria(categoria, btnElement) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            document.querySelectorAll('.test-section').forEach(sec => {
+                if (categoria === 'tutti' || sec.dataset.categoria === categoria) {
+                    sec.style.display = 'block';
+                } else {
+                    sec.style.display = 'none';
+                }
+            });
+        }
+
+        async function eseguiSingoloTest(testId) {
+            const t = SUITE_TEST.find(x => x.id === testId);
+            if (!t) return;
+
+            const card = document.getElementById(`card-${t.id}`);
+            const badge = document.getElementById(`badge-${t.id}`);
+            const latency = document.getElementById(`latency-${t.id}`);
+            const summary = document.getElementById(`summary-${t.id}`);
+            const jsonViewer = document.getElementById(`json-${t.id}`);
+
+            badge.className = 'status-badge badge-pending';
+            badge.innerText = 'CARICAMENTO...';
+            card.className = 'test-card status-pending';
+
+            const start = performance.now();
+            try {
+                const res = await t.esegui();
+                const end = performance.now();
+                const tempoMs = Math.round(end - start);
+
+                latency.innerHTML = `<i class="mdi mdi-clock-outline"></i> ${tempoMs} ms`;
+                jsonViewer.innerText = JSON.stringify(res, null, 4);
+
+                const analisi = t.analizza(res);
+
+                if (analisi.status === 'success') {
+                    card.className = 'test-card status-success';
+                    badge.className = 'status-badge badge-success';
+                    badge.innerText = 'OK 200';
+                } else if (analisi.status === 'warning') {
+                    card.className = 'test-card status-warning';
+                    badge.className = 'status-badge badge-warning';
+                    badge.innerText = 'AVVISO';
+                } else {
+                    card.className = 'test-card status-error';
+                    badge.className = 'status-badge badge-error';
+                    badge.innerText = 'ERRORE';
+                }
+
+                summary.innerHTML = `
+                    <span><strong>${analisi.msg}</strong></span>
+                    <button class="btn-copy" onclick="event.stopPropagation(); eseguiSingoloTest('${t.id}')"><i class="mdi mdi-play"></i> Rilancia Test</button>
+                `;
+
+                aggiornaStatisticheKPI();
+            } catch (err) {
+                const end = performance.now();
+                latency.innerHTML = `<i class="mdi mdi-clock-outline"></i> ${Math.round(end - start)} ms`;
+                card.className = 'test-card status-error';
+                badge.className = 'status-badge badge-error';
+                badge.innerText = 'FALLITO';
+                summary.innerHTML = `<span><strong>Eccezione: ${err.message}</strong></span>`;
+                jsonViewer.innerText = `Errore di esecuzione: ${err.stack || err.message}`;
+                aggiornaStatisticheKPI();
+            }
+        }
+
+        function aggiornaStatisticheKPI() {
+            const successi = document.querySelectorAll('.status-badge.badge-success').length;
+            const avvisi = document.querySelectorAll('.status-badge.badge-warning').length;
+            const errori = document.querySelectorAll('.status-badge.badge-error').length;
+
+            document.getElementById('kpi-successi').innerText = successi;
+            document.getElementById('kpi-avvisi').innerText = avvisi;
+            document.getElementById('kpi-errori').innerText = errori;
+        }
+
+        function pulisciRisultati() {
+            renderizzaInterfaccia();
+            document.getElementById('kpi-successi').innerText = '0';
+            document.getElementById('kpi-avvisi').innerText = '0';
+            document.getElementById('kpi-errori').innerText = '0';
+            document.getElementById('kpi-tempo').innerText = '0.0s';
+        }
+
+        async function avviaTuttiITest() {
+            const startGlobal = performance.now();
+            console.log("🚀 [Pitwall Diagnostics] Avvio suite completa di test su Jolpica F1 API...");
+
+            for (const t of SUITE_TEST) {
+                await eseguiSingoloTest(t.id);
+            }
+
+            const endGlobal = performance.now();
+            const tempoTotaleSec = ((endGlobal - startGlobal) / 1000).toFixed(1);
+            document.getElementById('kpi-tempo').innerText = `${tempoTotaleSec}s`;
+            console.log(`✅ [Pitwall Diagnostics] Tutti i ${SUITE_TEST.length} test completati in ${tempoTotaleSec}s!`);
+        }
+
+        // Inizializzazione della pagina
+        renderizzaInterfaccia();
+        // Esecuzione automatica dei test all'apertura
+        avviaTuttiITest();
     </script>
 </body>
 </html>
