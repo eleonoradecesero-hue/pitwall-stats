@@ -47,8 +47,8 @@ const SchermataCalendario = {
                                     label="Seleziona Stagione"
                                     density="compact"
                                     variant="solo-filled"
-                                    bg-color="rgba(0,0,0,0.4)"
-                                    color="white"
+                                    bg-color="rgba(255, 255, 255, 0.9)"
+                                    color="black"
                                     hide-details
                                     class="rounded-lg text-white"
                                     @update:model-value="caricaCalendario"
