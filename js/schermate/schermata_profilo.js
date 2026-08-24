@@ -38,29 +38,11 @@ const SchermataProfilo = {
                     </v-card>
                 </v-col>
 
-                <!-- SEZIONE DESTRA: Avatar e Punti -->
+                <!-- SEZIONE DESTRA: Punti pronostici -->
                 <v-col cols="12" md="4">
                     <v-card elevation="2" class="pa-4 text-center h-100">
-                        <v-card-title class="justify-center text-h5 mb-4">Scegli il tuo avatar</v-card-title>
-                        <v-card-text>
-                            <!-- Cerchio dell'Avatar -->
-                            <v-avatar size="120" color="grey-lighten-3" class="mb-4 elevation-2">
-                                <v-icon icon="mdi-camera" size="50" color="grey" v-if="!datiUtente.avatar"></v-icon>
-                                <span class="text-h2" v-else>{{ datiUtente.avatar }}</span>
-                            </v-avatar>
-                            
-                            <!-- Griglia di bottoni per scegliere l'avatar -->
-                            <v-row justify="center" class="mt-2">
-                                <v-col cols="auto" v-for="icona in iconeAvatar" :key="icona">
-                                    <v-btn icon variant="tonal" color="red" @click="datiUtente.avatar = icona">
-                                        <span class="text-h5">{{ icona }}</span>
-                                    </v-btn>
-                                </v-col>
-                            </v-row>
-
-                            <v-divider class="my-6"></v-divider>
-
-                            <!-- Punteggio Accumulato -->
+                        <v-card-title class="justify-center text-h5 mb-4">Punti pronostici</v-card-title>
+                        <v-card-text class="d-flex flex-column justify-center h-100">
                             <h3 class="text-h6 text-grey-darken-1">Punti accumulati</h3>
                             <p class="text-h3 font-weight-black text-red-darken-3 mt-2">
                                 {{ datiUtente.puntiAccumulati }}
@@ -71,7 +53,7 @@ const SchermataProfilo = {
                 </v-col>
             </v-row>
 
-            <!-- SEZIONE INFERIORE: I Preferiti di Eleonora -->
+            <!-- SEZIONE INFERIORE: I Preferiti di {{ datiUtente.nome }} -->
             <v-row v-if="utente" class="mt-6">
                 <v-col cols="12">
                     <v-card elevation="2" class="pa-4">
@@ -163,10 +145,6 @@ const SchermataProfilo = {
         const scuderiaPreferita = computed(() => listaScuderie.value.find(scuderia => scuderia.id === preferiti.value.scuderia));
         const inizialiUtente = computed(() => `${datiUtente.value.nome[0] || ''}${datiUtente.value.cognome[0] || ''}`.toUpperCase());
 
-        // 2. Lista di emoji da usare come avatar (al posto delle foto rosse del mockup)
-        const iconeAvatar = ['🏎️', '🏁', '🏆', '🔥', '🚀', '💨'];
-
-        // 3. Funzione che scatta quando si preme "Salva Modifiche"
         const mostraMessaggio = (testo, tipo = 'info') => {
             messaggio.value = testo;
             tipoMessaggio.value = tipo;
@@ -174,7 +152,10 @@ const SchermataProfilo = {
 
         const caricaPreferenze = async () => {
             const profilo = await ProfiloService.caricaProfilo(utente.value);
-            datiUtente.value = profilo.datiUtente;
+            const storicoSalvato = await PronosticiService.caricaStorico(utente.value.uid);
+            const storico = await Promise.all(storicoSalvato.map(pronostico => PronosticiService.calcolaERegistraPunti(utente.value.uid, pronostico)));
+            const puntiPronostici = storico.reduce((totale, pronostico) => totale + (Number(pronostico.punti) || 0), 0);
+            datiUtente.value = { ...profilo.datiUtente, puntiAccumulati: puntiPronostici };
             preferiti.value = profilo.preferiti;
         };
 
@@ -203,7 +184,6 @@ const SchermataProfilo = {
 
         return {
             datiUtente,
-            iconeAvatar,
             utente,
             listaPiloti,
             listaScuderie,

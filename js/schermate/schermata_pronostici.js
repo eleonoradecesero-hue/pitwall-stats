@@ -3,142 +3,131 @@
 const SchermataPronostici = {
     template: `
         <v-container fluid class="pa-4">
-            <!-- INTESTAZIONE E COUNTDOWN SCADENZA -->
-            <v-row class="mb-6">
-                <v-col cols="12">
-                    <h1 class="text-h4 text-red-darken-3 font-weight-bold mb-2">Area Pronostici</h1>
-                    <div class="d-flex align-center bg-grey-lighten-4 pa-3 rounded elevation-1">
-                        <v-icon icon="mdi-clock-alert-outline" color="red-darken-3" size="large" class="mr-3"></v-icon>
-                        <div>
-                            <div class="text-subtitle-2 text-grey-darken-1">Inserisci il tuo pronostico entro la scadenza:</div>
-                            <div class="text-h6 font-weight-black text-red-darken-3">09:12:35:06 — 🇺🇸 Miami Gran Prix</div>
-                        </div>
-                    </div>
-                </v-col>
-            </v-row>
+            <v-alert v-if="messaggio" :type="tipoMessaggio" variant="tonal" closable class="mb-4">{{ messaggio }}</v-alert>
+            <div class="d-flex align-center justify-space-between flex-wrap ga-3 mb-6">
+                <div>
+                    <h1 class="text-h4 text-red-darken-3 font-weight-bold">Area Pronostici</h1>
+                    <p class="text-body-1 text-grey-darken-1 mt-1">Indovina pole e podio prima dell'inizio delle qualifiche.</p>
+                </div>
+                <v-chip v-if="utente" color="green" variant="tonal" prepend-icon="mdi-account-check">{{ utente.displayName || utente.email }}</v-chip>
+            </div>
 
-            <!-- FORM DI INSERIMENTO PRONOSTICO (Requisito v-model del professore) -->
-            <v-row class="mb-8">
-                <v-col cols="12">
-                    <v-card elevation="2" class="pa-4">
-                        <v-card-title class="text-h5 mb-4 font-weight-bold">Fai il tuo pronostico per la gara</v-card-title>
-                        <v-card-text>
-                            <v-form @submit.prevent="inviaPronostico">
+            <v-card v-if="!utente" elevation="2" class="pa-8 text-center mb-6">
+                <v-icon icon="mdi-google" color="red-darken-3" size="52" class="mb-3"></v-icon>
+                <h2 class="text-h5 font-weight-bold mb-2">Accedi per partecipare</h2>
+                <p class="text-body-2 text-grey-darken-1 mb-4">I tuoi pronostici e i punti ottenuti saranno salvati nel tuo account Firebase.</p>
+                <v-btn color="red-darken-3" prepend-icon="mdi-google" :loading="caricamento" @click="accedi">Accedi con Google</v-btn>
+            </v-card>
+
+            <template v-else>
+                <v-card v-if="caricamento" class="pa-8 text-center mb-6">
+                    <v-progress-circular indeterminate color="red-darken-3"></v-progress-circular>
+                    <p class="mt-3 text-grey-darken-1">Caricamento del prossimo weekend...</p>
+                </v-card>
+
+                <v-alert v-else-if="!eventi.length" type="info" variant="tonal" class="mb-6">Non ci sono sessioni di qualifica disponibili per il prossimo weekend.</v-alert>
+
+                <v-row v-else class="mb-6">
+                    <v-col v-for="evento in eventi" :key="evento.id" cols="12" lg="6">
+                        <v-card elevation="2" class="pa-4 h-100">
+                            <v-card-title class="px-0 d-flex align-center justify-space-between flex-wrap ga-2">
+                                <span>{{ evento.tipo === 'sprint' ? 'Pronostico Sprint' : 'Pronostico Gara' }}</span>
+                                <v-chip size="small" :color="PronosticiService.scaduto(evento) ? 'grey' : 'red-darken-3'" variant="tonal">
+                                    {{ PronosticiService.scaduto(evento) ? 'Chiuso' : 'Aperto' }}
+                                </v-chip>
+                            </v-card-title>
+                            <v-card-subtitle class="px-0 mb-3">{{ gara.nome }} · chiusura {{ formattaScadenza(evento) }}</v-card-subtitle>
+                            <v-form @submit.prevent="inviaPronostico(evento)">
+                                <v-select v-model="moduli[evento.id].poleman" :items="piloti" item-title="nome" item-value="id" label="Poleman" prepend-inner-icon="mdi-flag-checkered" variant="outlined" :disabled="PronosticiService.scaduto(evento)"></v-select>
+                                <div class="text-subtitle-2 font-weight-bold mb-2">Podio della {{ evento.tipo === 'sprint' ? 'Sprint' : 'gara' }}</div>
                                 <v-row>
-                                    <!-- Scelta Poleman -->
-                                    <v-col cols="12" md="4">
-                                        <v-text-input 
-                                            label="Poleman (Pilota in Pole)" 
-                                            v-model="nuovoPronostico.poleman" 
-                                            variant="outlined"
-                                            prepend-inner-icon="mdi-flag-checkered"
-                                            placeholder="Es. Charles Leclerc"
-                                        ></v-text-input>
-                                    </v-col>
-
-                                    <!-- Podio: 1°, 2°, 3° posto -->
-                                    <v-col cols="12" md="4">
-                                        <v-text-input 
-                                            label="Vincitore 1° Posto" 
-                                            v-model="nuovoPronostico.podioPrimo" 
-                                            variant="outlined"
-                                            prepend-inner-icon="mdi-trophy"
-                                            placeholder="Es. L. Hamilton"
-                                        ></v-text-input>
-                                    </v-col>
-                                    <v-col cols="12" md="4">
-                                        <v-text-input 
-                                            label="2° Posto" 
-                                            v-model="nuovoPronostico.podioSecondo" 
-                                            variant="outlined"
-                                            placeholder="Es. O. Piastri"
-                                        ></v-text-input>
-                                    </v-col>
-                                    <v-col cols="12" md="4">
-                                        <v-text-input 
-                                            label="3° Posto" 
-                                            v-model="nuovoPronostico.podioTerzo" 
-                                            variant="outlined"
-                                            placeholder="Es. M. Verstappen"
-                                        ></v-text-input>
+                                    <v-col v-for="(etichetta, indice) in ['1° posto', '2° posto', '3° posto']" :key="etichetta" cols="12" sm="4" class="py-1">
+                                        <v-select v-model="moduli[evento.id].podio[indice]" :items="pilotiDisponibili(evento, indice)" item-title="nome" item-value="id" :label="etichetta" variant="outlined" :disabled="PronosticiService.scaduto(evento)"></v-select>
                                     </v-col>
                                 </v-row>
-
-                                <v-btn type="submit" color="red-darken-3" class="mt-4" size="large" prepend-icon="mdi-send">
-                                    Conferma e Salva Pronostico
-                                </v-btn>
+                                <v-btn type="submit" color="red-darken-3" prepend-icon="mdi-content-save" :disabled="PronosticiService.scaduto(evento)" :loading="salvataggio === evento.id">Salva pronostico</v-btn>
                             </v-form>
-                        </v-card-text>
-                    </v-card>
-                </v-col>
-            </v-row>
+                        </v-card>
+                    </v-col>
+                </v-row>
 
-            <!-- STORICO PRONOSTICI (Ispirato agli appunti di Eleonora) -->
-            <v-row>
-                <v-col cols="12">
-                    <v-card elevation="2" class="pa-4">
-                        <v-card-title class="text-h5 mb-4 font-weight-bold">Storico pronostici 2025</v-card-title>
-                        <v-card-text>
-                            <v-table>
-                                <thead>
-                                    <tr>
-                                        <th class="font-weight-bold">Gran Premio</th>
-                                        <th class="font-weight-bold">Poleman Pronosticato</th>
-                                        <th class="font-weight-bold">Podio Pronosticato</th>
-                                        <th class="font-weight-bold text-right">Punti Totali</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="storico in storicoPronostici" :key="storico.id">
-                                        <td class="font-weight-bold text-red-darken-3">
-                                            <v-icon icon="mdi-map-marker" size="small" class="mr-1"></v-icon>
-                                            {{ storico.granPremio }}
-                                        </td>
-                                        <td>{{ storico.poleman }}</td>
-                                        <td>{{ storico.podio }}</td>
-                                        <td class="text-right font-weight-bold">
-                                            <v-chip color="success" size="small">{{ storico.punti }} PT</v-chip>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </v-table>
-                        </v-card-text>
-                    </v-card>
-                </v-col>
-            </v-row>
+                <v-card elevation="2" class="pa-4">
+                    <v-card-title class="px-0">Storico dei miei pronostici</v-card-title>
+                    <v-table v-if="storico.length" density="comfortable">
+                        <thead><tr><th>Gran Premio</th><th>Sessione</th><th>Poleman</th><th>Podio</th><th class="text-right">Punti</th></tr></thead>
+                        <tbody><tr v-for="pronostico in storico" :key="pronostico.id">
+                            <td class="font-weight-bold">{{ pronostico.granPremio }}</td>
+                            <td>{{ pronostico.tipo === 'sprint' ? 'Sprint' : 'Gara' }}</td>
+                            <td>{{ nomePilota(pronostico.poleman) }}</td>
+                            <td>{{ pronostico.podio.map(nomePilota).join(' | ') }}</td>
+                            <td class="text-right"><v-chip :color="pronostico.punti === null ? 'grey' : 'success'" size="small">{{ pronostico.punti === null ? 'In attesa' : pronostico.punti + ' PT' }}</v-chip></td>
+                        </tr></tbody>
+                    </v-table>
+                    <p v-else class="text-body-2 text-grey-darken-1">Non hai ancora salvato pronostici.</p>
+                </v-card>
+            </template>
         </v-container>
     `,
     setup() {
-        const { ref } = Vue;
+        const { ref, computed, onMounted, onUnmounted } = Vue;
+        const utente = ref(null);
+        const gara = ref(null);
+        const piloti = ref([]);
+        const eventi = ref([]);
+        const moduli = ref({});
+        const storico = ref([]);
+        const messaggio = ref('');
+        const tipoMessaggio = ref('info');
+        const caricamento = ref(true);
+        const salvataggio = ref('');
+        let annullaAuth = () => {};
 
-        // Oggetto reattivo collegato ai campi del form tramite v-model
-        const nuovoPronostico = ref({
-            poleman: '',
-            podioPrimo: '',
-            podioSecondo: '',
-            podioTerzo: ''
+        const mostraMessaggio = (testo, tipo = 'info') => { messaggio.value = testo; tipoMessaggio.value = tipo; };
+        const nomePilota = id => piloti.value.find(pilota => pilota.id === id)?.nome || id || '-';
+        const formattaScadenza = evento => UtilityF1.formattaDataLocale(PronosticiService.scadenza(evento));
+        const pilotiDisponibili = (evento, indice) => piloti.value.filter(pilota => {
+            const selezionati = moduli.value[evento.id].podio.filter((id, posizione) => posizione !== indice && id);
+            return !selezionati.includes(pilota.id);
         });
 
-        // Storico dei pronostici passati (preso direttamente dai dati testuali di Eleonora)
-        const storicoPronostici = ref([
-            { id: 1, granPremio: "GP Miami", poleman: "HAM", podio: "HAM | VER | HAM", punti: 25 },
-            { id: 2, granPremio: "GP Imola", poleman: "LEC", podio: "LEC | HAM | NOR", punti: 18 },
-            { id: 3, granPremio: "GP Monaco", poleman: "VER", podio: "VER | LEC | SAI", punti: 10 }
-        ]);
-
-        // Funzione di invio del pronostico
-        const inviaPronostico = () => {
-            console.log("Pronostico registrato:", nuovoPronostico.value);
-            alert("Pronostico salvato con successo! (In futuro lo scriveremo direttamente su Cloud Firestore).");
-            
-            // Pulisce il form
-            nuovoPronostico.value = { poleman: '', podioPrimo: '', podioSecondo: '', podioTerzo: '' };
+        const caricaDati = async () => {
+            caricamento.value = true;
+            try {
+                const [datiHome, datiPiloti] = await Promise.all([HomeService.recuperaDatiHome(), PanoramicaService.carica()]);
+                gara.value = datiHome.prossimaGara;
+                piloti.value = datiPiloti.piloti.map(pilota => ({ ...pilota, id: PronosticiService.pilotaId(pilota) }));
+                eventi.value = PronosticiService.costruisciEventi(gara.value);
+                eventi.value.forEach(evento => { moduli.value[evento.id] = PronosticiService.creaPronosticoVuoto(evento); });
+                storico.value = await PronosticiService.caricaStorico(utente.value.uid);
+                storico.value.forEach(pronostico => {
+                    if (moduli.value[pronostico.eventoId]) {
+                        moduli.value[pronostico.eventoId] = { eventoId: pronostico.eventoId, tipo: pronostico.tipo, poleman: pronostico.poleman, podio: pronostico.podio };
+                    }
+                });
+                for (const indice in storico.value) storico.value[indice] = await PronosticiService.calcolaERegistraPunti(utente.value.uid, storico.value[indice]);
+            } catch (errore) { mostraMessaggio('Impossibile caricare i pronostici.', 'error'); console.error(errore); }
+            finally { caricamento.value = false; }
         };
-
-        return {
-            nuovoPronostico,
-            storicoPronostici,
-            inviaPronostico
+        const accedi = async () => { try { await FirebaseService.accediConGoogle(); } catch (errore) { mostraMessaggio(errore.message, 'error'); } };
+        const inviaPronostico = async evento => {
+            salvataggio.value = evento.id;
+            try {
+                const dati = await PronosticiService.salva(utente.value.uid, evento, moduli.value[evento.id]);
+                const esistente = storico.value.findIndex(pronostico => pronostico.id === evento.id);
+                const salvato = { id: evento.id, ...dati };
+                if (esistente >= 0) storico.value[esistente] = salvato; else storico.value.unshift(salvato);
+                mostraMessaggio('Pronostico salvato su Firebase.', 'success');
+            } catch (errore) { mostraMessaggio(errore.message, 'error'); }
+            finally { salvataggio.value = ''; }
         };
+        onMounted(() => {
+            annullaAuth = FirebaseService.osservaAutenticazione(async nuovoUtente => {
+                utente.value = nuovoUtente;
+                if (nuovoUtente) await caricaDati(); else caricamento.value = false;
+            });
+            if (!FirebaseService.configurato()) { caricamento.value = false; mostraMessaggio('Configura Firebase in js/firebase_config.js per attivare il login Google.', 'warning'); }
+        });
+        onUnmounted(() => annullaAuth());
+        return { PronosticiService, utente, gara, piloti, eventi, moduli, storico, messaggio, tipoMessaggio, caricamento, salvataggio, accedi, inviaPronostico, pilotiDisponibili, nomePilota, formattaScadenza };
     }
 };

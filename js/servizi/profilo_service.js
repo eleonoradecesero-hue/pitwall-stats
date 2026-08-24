@@ -8,7 +8,7 @@ const ProfiloService = {
         cellulare: '',
         nomeUtente: '',
         avatar: '',
-        puntiAccumulati: 450
+        puntiAccumulati: 0
     },
 
     async caricaListe() {

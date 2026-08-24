@@ -195,6 +195,12 @@ async function recuperaRisultatiQualifiche(stagione, round) {
     return (gare && gare.length > 0 && gare[0].QualifyingResults) ? gare[0].QualifyingResults : [];
 }
 
+async function recuperaRisultatiQualificheSprint(stagione, round) {
+    const mrData = await eseguiRichiestaJolpica(`/${stagione}/${round}/sprintqualifying.json`, { limit: 100 });
+    const gare = mrData?.RaceTable?.Races;
+    return (gare && gare.length > 0) ? (gare[0].QualifyingResults || gare[0].SprintQualifyingResults || []) : [];
+}
+
 /**
  * Recupera i risultati della Gara Sprint (se prevista nel weekend di gara).
  * @param {string|number} stagione - Anno di riferimento.
