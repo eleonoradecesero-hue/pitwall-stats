@@ -88,7 +88,7 @@ const SchermataCalendario = {
                             <v-card elevation="2" class="pa-4 h-100 hover-card rounded-xl border-left-upcoming d-flex flex-column justify-space-between">
                                 <div>
                                     <div class="d-flex align-center justify-space-between mb-2">
-                                        <span class="text-h4">{{ gara.bandiera }}</span>
+                                        <span class="text-h4">{{ gara.siglaPaese }}</span>
                                         <v-chip color="red-darken-3" size="small" variant="flat" class="font-weight-bold">
                                             ROUND {{ gara.round }}
                                         </v-chip>
@@ -133,7 +133,7 @@ const SchermataCalendario = {
                             <v-card elevation="1" class="pa-4 h-100 hover-card rounded-xl bg-grey-lighten-5 d-flex flex-column justify-space-between">
                                 <div>
                                     <div class="d-flex align-center justify-space-between mb-2">
-                                        <span class="text-h4">{{ gara.bandiera }}</span>
+                                        <span class="text-h4">{{ gara.siglaPaese }}</span>
                                         <v-chip color="grey-darken-1" size="small" variant="tonal" class="font-weight-bold">
                                             ROUND {{ gara.round }} • CONCLUSA
                                         </v-chip>
@@ -184,7 +184,7 @@ const SchermataCalendario = {
                         <div>
                             <div class="text-caption text-red-lighten-4">ROUND {{ garaSelezionata.round }} • {{ garaSelezionata.season }}</div>
                             <div class="text-h6 font-weight-black d-flex align-center">
-                                <span class="mr-2">{{ garaSelezionata.bandiera }}</span>
+                                <span class="mr-2">{{ garaSelezionata.siglaPaese }}</span>
                                 <span>{{ garaSelezionata.raceName }}</span>
                             </div>
                         </div>
@@ -218,7 +218,7 @@ const SchermataCalendario = {
                                         </td>
                                         <td>
                                             <div class="font-weight-bold d-flex align-center">
-                                                <span class="mr-1">{{ res.bandieraPilota }}</span>
+                                                <span class="mr-1">{{ res.siglaNazionalitaPilota }}</span>
                                                 <span>{{ res.nomePilota }}</span>
                                             </div>
                                         </td>

@@ -271,7 +271,7 @@ const SchermataClassifica = {
                                             </v-avatar>
                                             <div>
                                                 <div class="font-weight-bold d-flex align-center">
-                                                    <span class="mr-2">{{ pilota.bandieraNazionalita }}</span>
+                                                    <span class="mr-2">{{ pilota.siglaNazionalita }}</span>
                                                     <span>{{ pilota.nome }}</span>
                                                 </div>
                                                 <div class="text-caption text-grey">{{ pilota.sigla }} #{{ pilota.numero }}</div>
@@ -451,7 +451,7 @@ const SchermataClassifica = {
                                         </div>
                                     </td>
                                     <td class="text-center">
-                                        <span class="mr-1">{{ scuderia.bandieraNazionalita }}</span>
+                                        <span class="mr-1">{{ scuderia.siglaNazionalita }}</span>
                                         <span class="text-caption text-grey-darken-1">{{ scuderia.nazionalita }}</span>
                                     </td>
                                     <td class="text-center">
@@ -504,7 +504,7 @@ const SchermataClassifica = {
                         </div>
 
                         <v-list density="compact">
-                            <v-list-item prepend-icon="mdi-flag" title="Nazionalità" :subtitle="elementoSelezionato.nazionalita + ' ' + elementoSelezionato.bandieraNazionalita"></v-list-item>
+                            <v-list-item prepend-icon="mdi-flag" title="Nazionalità" :subtitle="elementoSelezionato.nazionalita + ' (' + elementoSelezionato.siglaNazionalita + ')' "></v-list-item>
                             <v-list-item prepend-icon="mdi-trophy" title="Vittorie Stagionali" :subtitle="elementoSelezionato.vittorie + ' GP vinti'"></v-list-item>
                             <v-list-item prepend-icon="mdi-counter" title="Punti Totali" :subtitle="elementoSelezionato.punti + ' punti'"></v-list-item>
                             <v-list-item v-if="elementoSelezionato.posizione > 1" prepend-icon="mdi-arrow-expand-vertical" title="Distacco dal Leader" :subtitle="'-' + (elementoSelezionato.deltaDalPrimo || elementoSelezionato.deltaDallaPrima) + ' PT'"></v-list-item>

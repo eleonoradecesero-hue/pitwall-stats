@@ -35,8 +35,8 @@ const PanoramicaService = {
             nome: p.nome,
             teamNome: p.scuderia,
             scuderia: p.scuderia,
-            nazionalita: `${p.nazionalita} ${p.bandieraNazionalita}`,
-            bandieraNazionalita: p.bandieraNazionalita,
+            nazionalita: `${p.nazionalita} (${p.siglaNazionalita})`,
+            siglaNazionalita: p.siglaNazionalita,
             foto: p.foto,
             punti: p.punti,
             vittorie: p.vittorie,
@@ -60,7 +60,7 @@ const PanoramicaService = {
             giriVeloci: Math.ceil(s.vittorie * 0.7),
             stagioni: 2026 - (idx === 0 ? 1954 : (idx === 1 ? 1950 : (idx === 2 ? 1966 : 2005))), // Anni di attività storici
             logo: s.logo,
-            nazionalita: `${s.nazionalita} ${s.bandieraNazionalita}`
+            nazionalita: `${s.nazionalita} (${s.siglaNazionalita})`,
         }));
 
         return {

@@ -40,7 +40,7 @@ const CalendarioService = {
                     dataOraGara: dataOraGara,
                     dataFormattata: UtilityF1.formattaDataLocale(gara.date),
                     oraPartenza: UtilityF1.formattaOraLocale(dataOraGaraIso),
-                    bandiera: UtilityF1.ottieniBandieraPaese(paese || gara.raceName),
+                    siglaPaese: UtilityF1.ottieniSiglaNazionalita(paese || gara.raceName),
                     circuitoNome: gara.Circuit?.circuitName || 'Circuito',
                     localita: gara.Circuit?.Location?.locality || paese
                 };
@@ -102,7 +102,7 @@ const CalendarioService = {
                     nomePilota: nomePilota,
                     siglaPilota: res.Driver.code || res.Driver.familyName.slice(0, 3).toUpperCase(),
                     nazionalitaPilota: res.Driver.nationality,
-                    bandieraPilota: UtilityF1.ottieniBandieraNazionalita(res.Driver.nationality),
+                    siglaNazionalitaPilota: UtilityF1.ottieniSiglaNazionalita(res.Driver.nationality),
                     scuderia: nomeTeam,
                     coloreScuderia: UtilityF1.ottieniColoreScuderia(nomeTeam),
                     giriCompletati: res.laps,

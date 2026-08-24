@@ -89,7 +89,7 @@ const SchermataPanoramica = {
                             >
                                 <div>
                                     <div class="d-flex justify-space-between align-center mb-1">
-                                        <span class="text-body-2">{{ pilota.bandieraNazionalita }}</span>
+                                        <span class="text-body-2">{{ pilota.siglaNazionalita }}</span>
                                         <v-chip color="red-darken-3" size="small" variant="flat" class="font-weight-bold">
                                             {{ pilota.posizione }}º
                                         </v-chip>

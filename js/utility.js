@@ -227,36 +227,49 @@ const UtilityF1 = {
     },
 
     /**
-     * Ottiene l'emoji della bandiera della nazionalità del pilota o team.
+     * Restituisce la sigla ISO alpha-3 della nazionalità del pilota o team.
      */
-    ottieniBandieraNazionalita(nazionalita) {
-        if (!nazionalita) return '🏁';
+    ottieniSiglaNazionalita(nazionalita) {
+        if (!nazionalita) return 'N/D';
         const n = String(nazionalita).toLowerCase().trim();
         const mappa = {
-            'italian': '🇮🇹', 'ita': '🇮🇹', 'italy': '🇮🇹',
-            'british': '🇬🇧', 'gbr': '🇬🇧', 'uk': '🇬🇧',
-            'monégasque': '🇲🇨', 'monegasque': '🇲🇨', 'mco': '🇲🇨', 'monaco': '🇲🇨',
-            'dutch': '🇳🇱', 'nld': '🇳🇱', 'netherlands': '🇳🇱',
-            'australian': '🇦🇺', 'aus': '🇦🇺', 'australia': '🇦🇺',
-            'spanish': '🇪🇸', 'esp': '🇪🇸', 'spain': '🇪🇸',
-            'german': '🇩🇪', 'ger': '🇩🇪', 'germany': '🇩🇪',
-            'french': '🇫🇷', 'fra': '🇫🇷', 'france': '🇫🇷',
-            'japanese': '🇯🇵', 'jpn': '🇯🇵', 'japan': '🇯🇵',
-            'canadian': '🇨🇦', 'can': '🇨🇦', 'canada': '🇨🇦',
-            'mexican': '🇲🇽', 'mex': '🇲🇽', 'mexico': '🇲🇽',
-            'brazilian': '🇧🇷', 'bra': '🇧🇷', 'brazil': '🇧🇷',
-            'new zealander': '🇳🇿', 'nzl': '🇳🇿', 'new zealand': '🇳🇿',
-            'thai': '🇹🇭', 'tha': '🇹🇭', 'thailand': '🇹🇭',
-            'danish': '🇩🇰', 'den': '🇩🇰', 'denmark': '🇩🇰',
-            'finnish': '🇫🇮', 'fin': '🇫🇮', 'finland': '🇫🇮',
-            'american': '🇺🇸', 'usa': '🇺🇸',
-            'chinese': '🇨🇳', 'china': '🇨🇳',
-            'austrian': '🇦🇹', 'swiss': '🇨🇭'
+            italian: 'ITA', italy: 'ITA', ita: 'ITA',
+            british: 'GBR', 'great britain': 'GBR', 'united kingdom': 'GBR', gbr: 'GBR', uk: 'GBR',
+            monégasque: 'MCO', monegasque: 'MCO', monaco: 'MCO', mco: 'MCO',
+            dutch: 'NLD', netherlands: 'NLD', nld: 'NLD',
+            australian: 'AUS', australia: 'AUS', aus: 'AUS',
+            spanish: 'ESP', spain: 'ESP', esp: 'ESP',
+            german: 'DEU', germany: 'DEU', ger: 'DEU', deu: 'DEU',
+            french: 'FRA', france: 'FRA', fra: 'FRA',
+            japanese: 'JPN', japan: 'JPN', jpn: 'JPN',
+            canadian: 'CAN', canada: 'CAN', can: 'CAN',
+            mexican: 'MEX', mexico: 'MEX', mex: 'MEX',
+            brazilian: 'BRA', brazil: 'BRA', bra: 'BRA',
+            'new zealander': 'NZL', 'new zealand': 'NZL', nzl: 'NZL',
+            thai: 'THA', thailand: 'THA', tha: 'THA',
+            danish: 'DNK', denmark: 'DNK', den: 'DNK', dnk: 'DNK',
+            finnish: 'FIN', finland: 'FIN', fin: 'FIN',
+            american: 'USA', 'united states': 'USA', usa: 'USA',
+            chinese: 'CHN', china: 'CHN', chn: 'CHN',
+            austrian: 'AUT', austria: 'AUT', aut: 'AUT',
+            swiss: 'CHE', switzerland: 'CHE', che: 'CHE',
+            belgian: 'BEL', belgium: 'BEL', bel: 'BEL',
+            austrian: 'AUT', austria: 'AUT', aut: 'AUT',
+            hungarian: 'HUN', hungary: 'HUN', hun: 'HUN',
+            bahrain: 'BHR', bhr: 'BHR',
+            'saudi arabia': 'SAU', sau: 'SAU',
+            singapore: 'SGP', sgp: 'SGP',
+            azerbaijan: 'AZE', aze: 'AZE',
+            qatar: 'QAT', qat: 'QAT',
+            'abu dhabi': 'ARE', uae: 'ARE', are: 'ARE',
+            portuguese: 'PRT', portugal: 'PRT', prt: 'PRT',
+            turkish: 'TUR', turkey: 'TUR', tur: 'TUR',
+            russian: 'RUS', russia: 'RUS', rus: 'RUS'
         };
-        for (const [k, v] of Object.entries(mappa)) {
-            if (n.includes(k)) return v;
+        for (const [chiave, sigla] of Object.entries(mappa)) {
+            if (n.includes(chiave)) return sigla;
         }
-        return '🏁';
+        return n.length === 3 ? n.toUpperCase() : 'N/D';
     },
 
     /**
