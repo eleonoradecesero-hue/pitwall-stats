@@ -12,6 +12,8 @@ const SchermataAnalisi = {
                     </v-row>
                 </v-card-text>
             </v-card>
+            <div class="d-flex align-center flex-wrap ga-4 mb-4 text-caption text-grey-darken-1">
+            </div>
             <v-card v-if="caricamento" class="mb-6 pa-4" elevation="1">
                 <div class="d-flex justify-space-between text-caption mb-2"><span>{{ statoCaricamento }}</span><strong>{{ progresso }}%</strong></div>
                 <v-progress-linear :model-value="progresso" color="red-darken-3" height="10" rounded></v-progress-linear>
@@ -21,12 +23,20 @@ const SchermataAnalisi = {
             <div v-else-if="!sessioni.length" class="text-center text-grey py-12"><v-icon icon="mdi-chart-box-outline" size="64"></v-icon><p class="text-h6">Seleziona un Gran Premio per iniziare.</p></div>
             <v-expansion-panels v-else multiple>
                 <v-expansion-panel v-for="sessione in sessioni" :key="sessione.session_key">
-                    <v-expansion-panel-title><strong>{{ etichetta(sessione) }}</strong><span class="text-caption text-grey ml-4">Sessione #{{ sessione.session_key }}</span></v-expansion-panel-title>
+                    <v-expansion-panel-title>
+                        <div class="d-flex align-center flex-wrap ga-2">
+                            <strong>{{ etichetta(sessione) }}</strong>
+                            <v-chip v-if="sessione.meteo" color="blue-grey-darken-1" variant="tonal" class="font-weight-medium">
+                                <v-icon icon="mdi-weather-partly-cloudy"  class="mr-1"></v-icon>
+                                {{ sintesiMeteo(sessione.meteo) }}
+                            </v-chip>
+                            <span v-else class="text-caption text-grey">Meteo non disponibile</span>
+                        </div>
+                    </v-expansion-panel-title>
                     <v-expansion-panel-text>
-                        <v-alert v-if="sessione.meteo" density="compact" variant="tonal" color="blue-grey" class="mb-4">Meteo: aria {{ sessione.meteo.aria.min }} / {{ sessione.meteo.aria.med }} / {{ sessione.meteo.aria.max }} °C, pista {{ sessione.meteo.pista.min }} / {{ sessione.meteo.pista.med }} / {{ sessione.meteo.pista.max }} °C, umidita {{ sessione.meteo.umidita.med }}%, vento {{ sessione.meteo.vento.med }} m/s</v-alert>
-                        <v-table v-if="sessione.tipo === 'Qualifiche'" density="compact" hover><thead><tr><th>Pos</th><th>Pilota</th><th>Giro</th><th>Gap leader</th><th>Gap prec.</th><th>Gap team</th><th>S1</th><th>S2</th><th>S3</th><th>Ideal</th><th>Delta ideal</th><th>Gomma</th><th>Vmax</th><th>Vmedia</th><th>Full gas</th><th>Brake</th><th>Lift&coast</th><th>Clipping</th></tr></thead><tbody><tr v-for="(p, i) in sessione.analisi.classifica" :key="p.numero"><td>{{ i + 1 }}</td><td><b>{{ p.acronimo }}</b></td><td>{{ tempo(p.miglior) }}</td><td>{{ delta(p.deltaLeader) }}</td><td>{{ delta(p.deltaPrecede) }}</td><td>{{ delta(p.deltaTeam) }}</td><td>{{ tempo(p.s1) }}</td><td>{{ tempo(p.s2) }}</td><td>{{ tempo(p.s3) }}</td><td>{{ tempo(p.ideal) }}</td><td>{{ delta(p.deltaIdeal) }}</td><td>{{ p.gomme || '-' }}</td><td>{{ p.telemetria.vmax ? p.telemetria.vmax + ' km/h' : '-' }}</td><td>{{ p.telemetria.vmedia ? p.telemetria.vmedia.toFixed(1) + ' km/h' : '-' }}</td><td>{{ percentuale(p.telemetria.pieno) }}</td><td>{{ percentuale(p.telemetria.freno) }}</td><td>{{ percentuale(p.telemetria.rilascio) }}</td><td>{{ percentuale(p.telemetria.clipping) }}</td></tr></tbody></v-table>
-                        <v-table v-else-if="sessione.tipo.startsWith('Practice')" density="compact" hover><thead><tr><th>Pos</th><th>Pilota</th><th>Miglior giro</th><th>S1</th><th>S2</th><th>S3</th><th>Giri</th></tr></thead><tbody><tr v-for="(p, i) in sessione.analisi.classifica" :key="p.acronimo"><td>{{ i + 1 }}</td><td><b>{{ p.acronimo }}</b></td><td>{{ tempo(p.miglior) }}</td><td>{{ tempo(p.s1) }}</td><td>{{ tempo(p.s2) }}</td><td>{{ tempo(p.s3) }}</td><td>{{ p.giri }}</td></tr></tbody></v-table>
-                        <v-table v-else density="compact" hover><thead><tr><th>Pos</th><th>Pilota</th><th>Giri</th><th>Tempo totale</th><th>Gap leader</th><th>Delta/giro leader</th><th>Gap prec.</th><th>Delta/giro prec.</th><th>Gap team</th><th>Delta/giro team</th><th>Passo mediano</th><th>Dev. standard</th><th>Passo ideale</th><th>Aria pulita</th><th>Pit</th><th>Media pit</th><th>Gomme</th></tr></thead><tbody><tr v-for="(p, i) in sessione.analisi.classifica" :key="p.numero"><td>{{ i + 1 }}</td><td><b>{{ p.acronimo }}</b></td><td>{{ p.giri?.length || p.giri_totali || 0 }}</td><td>{{ p.totale ? tempoGara(p.totale) : '-' }}</td><td>{{ p.gapLeader }}</td><td>{{ p.deltaLeaderGiro }}</td><td>{{ p.gapPrecedente }}</td><td>{{ p.deltaPrecedenteGiro }}</td><td>{{ p.gapTeam }}</td><td>{{ p.deltaTeamGiro }}</td><td>{{ p.mediano ? tempo(p.mediano) : '-' }}</td><td>{{ p.deviazione ? '±' + p.deviazione.toFixed(3) : '-' }}</td><td>{{ Number.isFinite(p.ideale) ? tempo(p.ideale) : '-' }}</td><td>{{ p.aria !== undefined ? p.aria + '%' : '-' }}</td><td>{{ p.pits !== undefined ? p.pits : '-' }}</td><td>{{ p.pitMedio ? p.pitMedio.toFixed(2) + 's' : '-' }}</td><td>{{ p.gomme?.join(' - ') || '-' }}</td></tr></tbody></v-table>
+                        <v-table v-if="sessione.tipo === 'Qualifiche'" density="compact" hover><thead><tr><th>Pos</th><th>Pilota</th><th>Giro</th><th>Gap leader</th><th>Gap prec.</th><th>Gap team</th><th>S1</th><th>S2</th><th>S3</th><th>Ideal</th><th>Delta ideal</th><th>Gomma</th><th>Vmax</th><th>Vmedia</th><th>Full gas</th><th>Brake</th><th>Lift&coast</th><th>Clipping</th></tr></thead><tbody><tr v-for="(p, i) in sessione.analisi.classifica" :key="p.numero"><td>{{ i + 1 }}</td><td><b>{{ p.acronimo }}</b></td><td :style="coloreRecord(sessione, p, 'miglior', false)">{{ tempo(p.miglior) }}</td><td>{{ delta(p.deltaLeader) }}</td><td>{{ delta(p.deltaPrecede) }}</td><td>{{ delta(p.deltaTeam) }}</td><td :style="coloreRecord(sessione, p, 's1', false)">{{ tempo(p.s1) }}</td><td :style="coloreRecord(sessione, p, 's2', false)">{{ tempo(p.s2) }}</td><td :style="coloreRecord(sessione, p, 's3', false)">{{ tempo(p.s3) }}</td><td :style="coloreRecord(sessione, p, 'ideal', false)">{{ tempo(p.ideal) }}</td><td>{{ delta(p.deltaIdeal) }}</td><td>{{ inizialiGomme(p.gomme) }}</td><td :style="coloreStatistica(sessione, p, 'telemetria.vmax', 'max')">{{ p.telemetria.vmax ? p.telemetria.vmax + ' km/h' : '-' }}</td><td :style="coloreStatistica(sessione, p, 'telemetria.vmedia', 'max')">{{ p.telemetria.vmedia ? p.telemetria.vmedia.toFixed(1) + ' km/h' : '-' }}</td><td :style="coloreStatistica(sessione, p, 'telemetria.pieno', 'max')">{{ percentuale(p.telemetria.pieno) }}</td><td :style="coloreStatistica(sessione, p, 'telemetria.freno', 'min')">{{ percentuale(p.telemetria.freno) }}</td><td :style="coloreStatistica(sessione, p, 'telemetria.rilascio', 'min')">{{ percentuale(p.telemetria.rilascio) }}</td><td :style="coloreStatistica(sessione, p, 'telemetria.clipping', 'min')">{{ percentuale(p.telemetria.clipping) }}</td></tr></tbody></v-table>
+                        <v-table v-else-if="sessione.tipo.startsWith('Practice')" density="compact" hover><thead><tr><th>Pos</th><th>Pilota</th><th>Miglior giro</th><th>S1</th><th>S2</th><th>S3</th><th>Giri</th></tr></thead><tbody><tr v-for="(p, i) in sessione.analisi.classifica" :key="p.acronimo"><td>{{ i + 1 }}</td><td><b>{{ p.acronimo }}</b></td><td :style="coloreRecord(sessione, p, 'miglior', true)">{{ tempo(p.miglior) }}</td><td :style="coloreRecord(sessione, p, 's1', true)">{{ tempo(p.s1) }}</td><td :style="coloreRecord(sessione, p, 's2', true)">{{ tempo(p.s2) }}</td><td :style="coloreRecord(sessione, p, 's3', true)">{{ tempo(p.s3) }}</td><td>{{ p.giri }}</td></tr></tbody></v-table>
+                        <v-table v-else density="compact" hover><thead><tr><th>Pos</th><th>Pilota</th><th>Giri</th><th>Tempo totale</th><th>Giro migliore</th><th>S1</th><th>S2</th><th>S3</th><th>Gap leader</th><th>Delta/giro leader</th><th>Gap prec.</th><th>Delta/giro prec.</th><th>Gap team</th><th>Delta/giro team</th><th>Passo mediano</th><th>Dev. standard</th><th>Passo ideale</th><th>Aria pulita</th><th>Pit</th><th>Media pit</th><th>Gomme</th></tr></thead><tbody><tr v-for="(p, i) in sessione.analisi.classifica" :key="p.numero"><td>{{ i + 1 }}</td><td><b>{{ p.acronimo }}</b></td><td>{{ p.giri?.length || p.giri_totali || 0 }}</td><td>{{ p.totale ? tempoGara(p.totale) : '-' }}</td><td :style="coloreRecord(sessione, p, 'miglior', true)">{{ tempo(p.miglior) }}</td><td :style="coloreRecord(sessione, p, 's1', true)">{{ tempo(p.s1) }}</td><td :style="coloreRecord(sessione, p, 's2', true)">{{ tempo(p.s2) }}</td><td :style="coloreRecord(sessione, p, 's3', true)">{{ tempo(p.s3) }}</td><td>{{ p.gapLeader }}</td><td>{{ p.deltaLeaderGiro }}</td><td>{{ p.gapPrecedente }}</td><td>{{ p.deltaPrecedenteGiro }}</td><td>{{ p.gapTeam }}</td><td>{{ p.deltaTeamGiro }}</td><td :style="coloreStatistica(sessione, p, 'mediano', 'min')">{{ p.mediano ? tempo(p.mediano) : '-' }}</td><td :style="coloreStatistica(sessione, p, 'deviazione', 'min')">{{ p.deviazione ? '±' + p.deviazione.toFixed(3) : '-' }}</td><td :style="coloreStatistica(sessione, p, 'ideale', 'min')">{{ Number.isFinite(p.ideale) ? tempo(p.ideale) : '-' }}</td><td :style="coloreStatistica(sessione, p, 'aria', 'max')">{{ p.aria !== undefined ? p.aria + '%' : '-' }}</td><td :style="coloreStatistica(sessione, p, 'pits', 'min')">{{ p.pits !== undefined ? p.pits : '-' }}</td><td :style="coloreStatistica(sessione, p, 'pitMedio', 'min')">{{ p.pitMedio ? p.pitMedio.toFixed(2) + 's' : '-' }}</td><td>{{ inizialiGomme(p.gomme) }}</td></tr></tbody></v-table>
                     </v-expansion-panel-text>
                 </v-expansion-panel>
             </v-expansion-panels>
@@ -40,6 +50,34 @@ const SchermataAnalisi = {
         const etichetta = s => s.session_name === 'Race' ? 'Gara' : s.session_name === 'Qualifying' ? 'Qualifiche' : s.session_name;
         const tempo = s => !Number.isFinite(s) ? '-' : `${Math.floor(s / 60) ? Math.floor(s / 60) + ':' : ''}${(s % 60).toFixed(3).padStart(6, '0')}`;
         const tempoGara = s => tempo(s); const delta = d => d === '-' || !Number.isFinite(d) || d === 0 ? '-' : `+${d.toFixed(3)}`; const percentuale = p => Number.isFinite(p) ? p.toFixed(1) + '%' : '-';
-        onMounted(caricaMeeting); return { anno, anni, meetings, meeting, sessioni, caricamentoMeeting, caricamento, progresso, statoCaricamento, errore, caricaMeeting, caricaAnalisi, etichetta, tempo, tempoGara, delta, percentuale };
+        const inizialiGomme = gomme => {
+            if (!gomme || gomme === '-') return '-';
+            const valori = Array.isArray(gomme) ? gomme : [gomme];
+            return valori.filter(Boolean).map(gomma => String(gomma).trim().charAt(0).toUpperCase()).join(' - ') || '-';
+        };
+        const sintesiMeteo = meteo => {
+            if (!meteo) return '';
+            return `Temp. aria ${meteo.aria.med}°C · pista ${meteo.pista.med}°C · Umidità ${meteo.umidita.med}% · Vento ${meteo.vento.med} m/s`;
+        };
+        const coloreRecord = (sessione, pilota, campo, soloAssoluti) => {
+            const valore = pilota[campo];
+            if (!Number.isFinite(valore)) return {};
+            const classifica = sessione.analisi?.classifica || [];
+            const valori = classifica.map(elemento => elemento[campo]).filter(Number.isFinite);
+            const assoluto = valori.length > 0 && valore === Math.min(...valori);
+            if (assoluto) return { color: '#8e24aa', fontWeight: '800' };
+            if (!soloAssoluti) return { color: '#16803c', fontWeight: '700' };
+            return {};
+        };
+        const valoreCampo = (oggetto, percorso) => percorso.split('.').reduce((valore, chiave) => valore?.[chiave], oggetto);
+        const coloreStatistica = (sessione, pilota, campo, direzione) => {
+            const valore = valoreCampo(pilota, campo);
+            if (!Number.isFinite(valore)) return {};
+            const valori = (sessione.analisi?.classifica || []).map(elemento => valoreCampo(elemento, campo)).filter(Number.isFinite);
+            if (!valori.length) return {};
+            const record = direzione === 'max' ? Math.max(...valori) : Math.min(...valori);
+            return valore === record ? { color: '#8e24aa', fontWeight: '800' } : {};
+        };
+        onMounted(caricaMeeting); return { anno, anni, meetings, meeting, sessioni, caricamentoMeeting, caricamento, progresso, statoCaricamento, errore, caricaMeeting, caricaAnalisi, etichetta, tempo, tempoGara, delta, percentuale, inizialiGomme, sintesiMeteo, coloreRecord, coloreStatistica };
     }
 };
