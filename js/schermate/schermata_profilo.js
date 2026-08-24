@@ -24,8 +24,7 @@ const SchermataProfilo = {
                 <!-- SEZIONE SINISTRA: Dati Personali -->
                 <v-col cols="12" md="8">
                     <v-card elevation="2" class="pa-4 h-100">
-                        <v-card-title class="text-h5 mb-4">Dati personali</v-card-title>
-                        <v-card-text class="d-flex align-center py-8">
+                        <v-card-text class="d-flex align-center">
                             <v-avatar size="96" color="red-darken-3" class="mr-5 elevation-3">
                                 <v-img v-if="utente.photoURL" :src="utente.photoURL" alt="Foto profilo"></v-img>
                                 <span v-else class="text-h4 text-white font-weight-bold">{{ inizialiUtente }}</span>
@@ -41,7 +40,6 @@ const SchermataProfilo = {
                 <!-- SEZIONE DESTRA: Punti pronostici -->
                 <v-col cols="12" md="4">
                     <v-card elevation="2" class="pa-4 text-center h-100">
-                        <v-card-title class="justify-center text-h5 mb-4">Punti pronostici</v-card-title>
                         <v-card-text class="d-flex flex-column justify-center h-100">
                             <h3 class="text-h6 text-grey-darken-1">Punti accumulati</h3>
                             <p class="text-h3 font-weight-black text-red-darken-3 mt-2">
