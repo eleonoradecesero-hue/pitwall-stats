@@ -20,32 +20,15 @@ const UtilityF1 = {
      */
     coloriScuderie: {
         'ferrari': '#E8002D',
-        'scuderia ferrari': '#E8002D',
-        'scuderia ferrari hp': '#E8002D',
         'mercedes': '#27F4D2',
-        'mercedes-amg petronas': '#27F4D2',
-        'mercedes-amg petronas f1 team': '#27F4D2',
         'mclaren': '#FF8000',
-        'mclaren f1 team': '#FF8000',
-        'mclaren mastercard f1 team': '#FF8000',
         'red bull': '#3671C6',
-        'red bull racing': '#3671C6',
         'aston martin': '#229971',
-        'aston martin aramco f1 team': '#229971',
         'alpine': '#0093CC',
-        'alpine f1 team': '#0093CC',
         'williams': '#64C4FF',
-        'williams racing': '#64C4FF',
         'haas': '#B6BABD',
-        'moneygram haas f1 team': '#B6BABD',
-        'haas f1 team': '#B6BABD',
-        'sauber': '#52E252',
-        'kick sauber': '#52E252',
-        'stake f1 team kick sauber': '#52E252',
         'audi': '#E30613',
         'rb': '#6692FF',
-        'racing bulls': '#6692FF',
-        'visa cash app rb f1 team': '#6692FF',
         'cadillac': '#909090',
         'toro rosso': '#469BFF',
         'alphatauri': '#5E8FAA'
@@ -187,43 +170,6 @@ const UtilityF1 = {
         if (n.includes('race') || n.includes('gara')) return 'Gara';
 
         return nomeOriginale;
-    },
-
-    /**
-     * Ottiene l'emoji della bandiera del paese del Gran Premio.
-     */
-    ottieniBandieraPaese(paese) {
-        if (!paese) return '🏁';
-        const p = String(paese).toLowerCase().trim();
-
-        const mappa = {
-            'italy': '🇮🇹', 'italia': '🇮🇹', 'ita': '🇮🇹', 'monza': '🇮🇹', 'imola': '🇮🇹',
-            'netherlands': '🇳🇱', 'paesi bassi': '🇳🇱', 'nld': '🇳🇱', 'zandvoort': '🇳🇱', 'dutch': '🇳🇱',
-            'monaco': '🇲🇨', 'monte carlo': '🇲🇨', 'mco': '🇲🇨',
-            'great britain': '🇬🇧', 'united kingdom': '🇬🇧', 'uk': '🇬🇧', 'gbr': '🇬🇧', 'silverstone': '🇬🇧',
-            'belgium': '🇧🇪', 'belgio': '🇧🇪', 'bel': '🇧🇪', 'spa': '🇧🇪',
-            'spain': '🇪🇸', 'spagna': '🇪🇸', 'esp': '🇪🇸', 'barcelona': '🇪🇸', 'madrid': '🇪🇸',
-            'austria': '🇦🇹', 'aut': '🇦🇹', 'spielberg': '🇦🇹', 'red bull ring': '🇦🇹',
-            'hungary': '🇭🇺', 'ungheria': '🇭🇺', 'hun': '🇭🇺', 'hungaroring': '🇭🇺',
-            'australia': '🇦🇺', 'aus': '🇦🇺', 'melbourne': '🇦🇺',
-            'japan': '🇯🇵', 'giappone': '🇯🇵', 'jpn': '🇯🇵', 'suzuka': '🇯🇵',
-            'china': '🇨🇳', 'cina': '🇨🇳', 'chn': '🇨🇳', 'shanghai': '🇨🇳',
-            'bahrain': '🇧🇭', 'bhr': '🇧🇭', 'sakhir': '🇧🇭',
-            'saudi arabia': '🇸🇦', 'arabia saudita': '🇸🇦', 'sau': '🇸🇦', 'jeddah': '🇸🇦',
-            'miami': '🇺🇸', 'united states': '🇺🇸', 'usa': '🇺🇸', 'austin': '🇺🇸', 'las vegas': '🇺🇸',
-            'canada': '🇨🇦', 'can': '🇨🇦', 'montreal': '🇨🇦',
-            'mexico': '🇲🇽', 'messico': '🇲🇽', 'mex': '🇲🇽', 'mexico city': '🇲🇽',
-            'brazil': '🇧🇷', 'brasile': '🇧🇷', 'bra': '🇧🇷', 'interlagos': '🇧🇷', 'sao paulo': '🇧🇷',
-            'singapore': '🇸🇬', 'sgp': '🇸🇬', 'marina bay': '🇸🇬',
-            'azerbaijan': '🇦🇿', 'azerbaigian': '🇦🇿', 'aze': '🇦🇿', 'baku': '🇦🇿',
-            'qatar': '🇶🇦', 'qat': '🇶🇦', 'losail': '🇶🇦',
-            'abu dhabi': '🇦🇪', 'uae': '🇦🇪', 'yas marina': '🇦🇪'
-        };
-
-        for (const [k, v] of Object.entries(mappa)) {
-            if (p.includes(k)) return v;
-        }
-        return '🏁';
     },
 
     /**
