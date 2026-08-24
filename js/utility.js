@@ -211,7 +211,8 @@ const UtilityF1 = {
             'abu dhabi': 'ARE', uae: 'ARE', are: 'ARE',
             portuguese: 'PRT', portugal: 'PRT', prt: 'PRT',
             turkish: 'TUR', turkey: 'TUR', tur: 'TUR',
-            russian: 'RUS', russia: 'RUS', rus: 'RUS'
+            russian: 'RUS', russia: 'RUS', rus: 'RUS',
+            argentinian: 'ARG', argentina: 'ARG', arg: 'ARG',
         };
         for (const [chiave, sigla] of Object.entries(mappa)) {
             if (n.includes(chiave)) return sigla;
