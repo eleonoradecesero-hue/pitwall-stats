@@ -13,6 +13,7 @@ const rotteApplicazione = [
     { path: '/panoramica', component: SchermataPanoramica },
     { path: '/profilo', component: SchermataProfilo },
     { path: '/pronostici', component: SchermataPronostici }
+    ,{ path: '/analisi', component: SchermataAnalisi }
 ];
 
 const gestoreDiRotte = createRouter({
