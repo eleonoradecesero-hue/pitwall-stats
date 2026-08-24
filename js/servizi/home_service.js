@@ -185,7 +185,7 @@ const HomeService = {
         const paese = garaApi.Circuit?.Location?.country || '';
         const circuito = garaApi.Circuit?.circuitName || 'Circuito';
         const localita = garaApi.Circuit?.Location?.locality || '';
-        const bandiera = UtilityF1.ottieniBandieraPaese(paese || garaApi.raceName);
+        const bandiera = UtilityF1.ottieniSiglaNazionalita(paese || garaApi.raceName);
 
         return {
             id: garaApi.round || 1,
