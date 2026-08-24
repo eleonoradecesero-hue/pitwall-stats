@@ -35,6 +35,11 @@ const ClassificaService = {
             const nomeTeam = item.Constructors?.[0]?.name || 'Team sconosciuto';
             const punti = Number(item.points || 0);
             const posizione = Number(item.position || 1);
+            const informazioniPilota = UtilityF1.informazioni_piloti.find(pilota =>
+                String(pilota.driver_number) === String(item.Driver.permanentNumber) ||
+                pilota.name_acronym === item.Driver.code ||
+                pilota.nome.toLowerCase() === nomeCompleto.toLowerCase()
+            );
 
             return {
                 posizione: posizione,
@@ -49,7 +54,8 @@ const ClassificaService = {
                 punti: punti,
                 vittorie: Number(item.wins || 0),
                 deltaDalPrimo: puntiPrimo - punti,
-                foto: UtilityF1.ottieniFotoPilota(nomeCompleto),
+                foto: informazioniPilota?.foto || UtilityF1.ottieniFotoPilota(nomeCompleto),
+                headshot_url: informazioniPilota?.headshot_url || informazioniPilota?.foto,
                 round: rispostaApi.round,
                 stagione: rispostaApi.stagione
             };
