@@ -38,16 +38,17 @@ const UtilityF1 = {
      * Mappa dei loghi SVG vettoriali delle scuderie
      */
     loghiScuderie: {
-        'mercedes': 'https://cdn.worldvectorlogo.com/logos/mercedes-amg-petronas-f1.svg',
-        'ferrari': 'https://cdn.worldvectorlogo.com/logos/scuderia-ferrari-1.svg',
-        'mclaren': 'https://cdn.worldvectorlogo.com/logos/mclaren-f1-2.svg',
-        'red bull': 'https://cdn.worldvectorlogo.com/logos/red-bull-racing.svg',
-        'aston martin': 'https://cdn.worldvectorlogo.com/logos/aston-martin-f1-team.svg',
-        'alpine': 'https://cdn.worldvectorlogo.com/logos/alpine-f1-team.svg',
-        'williams': 'https://cdn.worldvectorlogo.com/logos/williams-grand-prix-engineering.svg',
-        'haas': 'https://cdn.worldvectorlogo.com/logos/haas-f1-team-1.svg',
-        'sauber': 'https://cdn.worldvectorlogo.com/logos/sauber-f1-team.svg',
-        'rb': 'https://cdn.worldvectorlogo.com/logos/scuderia-alphatauri.svg'
+        'mercedes': 'https://www.formula1.it/admin/foto/scuderie/scuderia-2026-id291.webp',
+        'ferrari': 'https://www.formula1.it/admin/foto/scuderie/scuderia-2026-id293.webp',
+        'mclaren': 'https://www.formula1.it/admin/foto/scuderie/scuderia-2026-id290.webp',
+        'red bull': 'https://www.formula1.it/admin/foto/scuderie/scuderia-2026-id292.webp',
+        'williams': 'https://www.formula1.it/admin/foto/scuderie/scuderia-2026-id294.webp',
+        'rb': 'https://www.formula1.it/admin/foto/scuderie/scuderia-2026-id295.webp',
+        'aston martin': 'https://www.formula1.it/admin/foto/scuderie/scuderia-2026-id296.webp',
+        'haas': 'https://www.formula1.it/admin/foto/scuderie/scuderia-2026-id297.webp',
+        'audi': 'https://www.formula1.it/admin/foto/scuderie/scuderia-2026-id298.webp',
+        'alpine': 'https://www.formula1.it/admin/foto/scuderie/scuderia-2026-id299.webp',
+        'cadillac': 'https://www.formula1.it/admin/foto/scuderie/scuderia-2026-id300.webp'
     },
 
     /**
