@@ -218,12 +218,11 @@ const SchermataCalendario = {
                                         </td>
                                         <td>
                                             <div class="font-weight-bold d-flex align-center">
-                                                <span class="mr-1">{{ res.siglaNazionalitaPilota }}</span>
                                                 <span>{{ res.nomePilota }}</span>
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="text-caption font-weight-medium" :style="{ color: res.coloreScuderia }">
+                                            <span class="text-caption font-weight-bold" :style="{ color: res.coloreScuderia }">
                                                 {{ res.scuderia }}
                                             </span>
                                         </td>
