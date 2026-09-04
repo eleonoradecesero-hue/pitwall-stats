@@ -20,6 +20,7 @@ const SchermataAnalisi = {
             </v-card>
             <v-alert v-if="errore" type="error" variant="tonal" class="mb-4">{{ errore }}</v-alert>
             <div v-if="caricamento" class="text-center py-8"><v-progress-circular indeterminate color="red-darken-3" size="48"></v-progress-circular><p class="text-body-1 mt-4">I dati vengono scaricati, calcolati e salvati nella cache...</p></div>
+            <!-- Le sessioni in corso possono essere presenti nell'API prima dei relativi dati analitici. -->
             <div v-else-if="!sessioni.length" class="text-center text-grey py-12">
                 <v-icon icon="mdi-clock-outline" color="amber-darken-3" size="64"></v-icon>
                 <p class="text-h6 mt-3">Dati della sessione non ancora disponibili.</p>

@@ -46,6 +46,7 @@ const CalendarioService = {
                 };
             });
 
+            // Una data passata non basta: le gare annullate non hanno un risultato da mostrare.
             const gareConStatoRisultati = await Promise.all(tutteLeGare.map(async gara => {
                 const conclusaPerData = gara.dataOraGara.getTime() + (3 * 60 * 60 * 1000) < adesso.getTime();
                 if (!conclusaPerData) return { ...gara, risultatiDisponibili: false };
@@ -53,6 +54,7 @@ const CalendarioService = {
                     const risultati = await recuperaRisultatiGara(gara.season || queryAnno, gara.round);
                     return { ...gara, risultatiDisponibili: risultati.length > 0 };
                 } catch (errore) {
+                    // Un errore sul singolo round non deve impedire di caricare il calendario.
                     return { ...gara, risultatiDisponibili: false };
                 }
             }));

@@ -223,6 +223,7 @@ const UtilityF1 = {
     },
 
     ottieniSiglaPaese(paese, nomeGara = '', circuito = '') {
+        // I dati dei GP possono riportare il paese nel circuito o soltanto nel nome della gara.
         const riferimento = `${paese || ''} ${nomeGara || ''} ${circuito || ''}`;
         return this.ottieniSiglaNazionalita(riferimento);
     },

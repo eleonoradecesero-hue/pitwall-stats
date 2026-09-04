@@ -37,6 +37,7 @@ const FirebaseService = {
     async registraConEmail(email, password) {
         if (!this.inizializza()) throw new Error('Configura Firebase in js/firebase_config.js prima di registrarti.');
         const risultato = await this.autenticazione.createUserWithEmailAndPassword(email, password);
+        // Crea subito il profilo applicativo oltre all'utente gestito da Firebase Auth.
         await this.salvaProfilo(risultato.user.uid, { email: risultato.user.email });
         return risultato.user;
     },

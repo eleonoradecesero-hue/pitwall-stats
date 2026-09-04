@@ -53,6 +53,7 @@ const PronosticiService = {
     },
 
     calcolaPunti(pronostico, risultatiGara = [], risultatiQualifica = []) {
+        // Il poleman vale 10 punti; il podio usa i punti ufficiali assegnati in gara o Sprint.
         const risultatoPerPilota = new Map(risultatiGara.map(risultato => [this.pilotaId({ sigla: risultato.Driver?.code, numero: risultato.number, driverId: risultato.Driver?.driverId }), risultato]));
         const qualificaPole = risultatiQualifica.find(risultato => Number(risultato.position) === 1);
         const poleId = this.pilotaId({ sigla: qualificaPole?.Driver?.code, numero: qualificaPole?.number, driverId: qualificaPole?.Driver?.driverId });
