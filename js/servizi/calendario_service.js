@@ -40,7 +40,7 @@ const CalendarioService = {
                     dataOraGara: dataOraGara,
                     dataFormattata: UtilityF1.formattaDataLocale(gara.date),
                     oraPartenza: UtilityF1.formattaOraLocale(dataOraGaraIso),
-                    siglaPaese: UtilityF1.ottieniSiglaNazionalita(paese || gara.raceName),
+                    siglaPaese: UtilityF1.ottieniSiglaPaese(paese, gara.raceName, gara.Circuit?.circuitName),
                     circuitoNome: gara.Circuit?.circuitName || 'Circuito',
                     localita: gara.Circuit?.Location?.locality || paese
                 };

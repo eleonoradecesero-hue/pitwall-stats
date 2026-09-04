@@ -88,7 +88,7 @@ const UtilityF1 = {
         { driver_number: 3, name_acronym: 'VER', first_name: 'Max', last_name: 'Verstappen', team_name: 'Red Bull Racing' },
         { driver_number: 5, name_acronym: 'BOR', first_name: 'Gabriel', last_name: 'Bortoleto', team_name: 'Audi' },
         { driver_number: 10, name_acronym: 'GAS', first_name: 'Pierre', last_name: 'Gasly', team_name: 'Alpine' },
-        { driver_number: 11, name_acronym: 'PER', first_name: 'Sergio', last_name: 'Perez', team_name: 'Cadillac' },
+        { driver_number: 11, name_acronym: 'PER', first_name: 'Sergio', last_name: 'Perez', team_name: 'Cadillac', nazionalita: 'Mexican' },
         { driver_number: 12, name_acronym: 'ANT', first_name: 'Kimi', last_name: 'Antonelli', team_name: 'Mercedes' },
         { driver_number: 14, name_acronym: 'ALO', first_name: 'Fernando', last_name: 'Alonso', team_name: 'Aston Martin' },
         { driver_number: 16, name_acronym: 'LEC', first_name: 'Charles', last_name: 'Leclerc', team_name: 'Ferrari' },
@@ -179,6 +179,8 @@ const UtilityF1 = {
     ottieniSiglaNazionalita(nazionalita) {
         if (!nazionalita) return 'N/D';
         const n = String(nazionalita).toLowerCase().trim();
+        if (n.includes('mexico') || n.includes('mexican')) return 'MEX';
+        if (n.includes('bahrain') || n.includes('sakhir')) return 'BHR';
         const mappa = {
             italian: 'ITA', italy: 'ITA', ita: 'ITA',
             british: 'GBR', 'great britain': 'GBR', 'united kingdom': 'GBR', gbr: 'GBR', uk: 'GBR',
@@ -217,8 +219,12 @@ const UtilityF1 = {
         for (const [chiave, sigla] of Object.entries(mappa)) {
             if (n.includes(chiave)) return sigla;
         }
-        if (n.includes('perez') || n.includes('mexic')) return 'MEX';
         return n.length === 3 ? n.toUpperCase() : 'N/D';
+    },
+
+    ottieniSiglaPaese(paese, nomeGara = '', circuito = '') {
+        const riferimento = `${paese || ''} ${nomeGara || ''} ${circuito || ''}`;
+        return this.ottieniSiglaNazionalita(riferimento);
     },
 
     /**

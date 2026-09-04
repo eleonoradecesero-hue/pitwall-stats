@@ -33,14 +33,14 @@ const ClassificaService = {
         return pilotiStandings.map(item => {
             const nomeCompleto = `${item.Driver.givenName} ${item.Driver.familyName}`;
             const nomeTeam = item.Constructors?.[0]?.name || 'Team sconosciuto';
-            const nazionalitaPilota = /perez/i.test(item.Driver.familyName) ? 'Mexican' : item.Driver.nationality;
             const punti = Number(item.points || 0);
             const posizione = Number(item.position || 1);
             const informazioniPilota = UtilityF1.informazioni_piloti.find(pilota =>
                 String(pilota.driver_number) === String(item.Driver.permanentNumber) ||
                 pilota.name_acronym === item.Driver.code ||
-                pilota.nome.toLowerCase() === nomeCompleto.toLowerCase()
+                `${pilota.first_name} ${pilota.last_name}`.toLowerCase() === nomeCompleto.toLowerCase()
             );
+            const nazionalitaPilota = informazioniPilota?.nazionalita || item.Driver.nationality;
 
             return {
                 posizione: posizione,
