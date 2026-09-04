@@ -82,6 +82,14 @@ const ProfiloService = {
         return FirebaseService.accediConGoogle();
     },
 
+    accediConEmail(email, password) {
+        return FirebaseService.accediConEmail(email, password);
+    },
+
+    registraConEmail(email, password) {
+        return FirebaseService.registraConEmail(email, password);
+    },
+
     esci() {
         return FirebaseService.esci();
     },

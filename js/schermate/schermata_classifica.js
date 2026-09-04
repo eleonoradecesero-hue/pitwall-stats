@@ -44,23 +44,8 @@ const SchermataClassifica = {
                         <!-- SELETTORE ANNO E BOTTONI PILOTI / COSTRUTTORI -->
                         <v-col cols="12" md="5" class="text-md-right mt-4 mt-md-0">
                             <div class="d-flex flex-column align-md-end gap-3">
-                                <!-- Bottoni switch Piloti / Scuderie -->
-                                <v-btn-toggle
-                                    v-model="tipoClassifica"
-                                    mandatory
-                                    color="white"
-                                    class="elevation-2 bg-black-opacity rounded-pill pa-1"
-                                >
-                                    <v-btn value="piloti" prepend-icon="mdi-account" class="rounded-pill font-weight-bold px-4" size="small">
-                                        Piloti
-                                    </v-btn>
-                                    <v-btn value="scuderie" prepend-icon="mdi-car-sports" class="rounded-pill font-weight-bold px-4" size="small">
-                                        Scuderie
-                                    </v-btn>
-                                </v-btn-toggle>
-
                                 <!-- Selettore Anno compatto -->
-                                <div style="min-width: 160px; max-width: 200px;" class="mt-2">
+                                <div style="min-width: 160px; max-width: 200px;">
                                     <v-select
                                         v-model="annoSelezionato"
                                         :items="anniDisponibili"
@@ -75,6 +60,10 @@ const SchermataClassifica = {
                                         @update:model-value="caricaClassifiche"
                                     ></v-select>
                                 </div>
+                                <v-btn-toggle v-model="tipoClassifica" mandatory divided color="white" class="switch-sezione bg-black-opacity pa-1">
+                                    <v-btn value="piloti" prepend-icon="mdi-account" class="font-weight-bold px-4" size="small">Piloti</v-btn>
+                                    <v-btn value="scuderie" prepend-icon="mdi-car-sports" class="font-weight-bold px-4" size="small">Scuderie</v-btn>
+                                </v-btn-toggle>
                             </div>
                         </v-col>
                     </v-row>
@@ -272,13 +261,13 @@ const SchermataClassifica = {
                                             <div>
                                                 <div class="font-weight-bold d-flex align-center">
                                                     <span class="mr-2">{{ pilota.siglaNazionalita }}</span>
-                                                    <span>{{ pilota.nome }}</span>
+                                                    <span class="nome-pilota"><span>{{ pilota.nomeRighe?.[0] }}</span><span>{{ pilota.nomeRighe?.[1] }}</span></span>
                                                 </div>
                                                 <div class="text-caption text-grey">{{ pilota.sigla }} #{{ pilota.numero }}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <v-chip size="small" variant="outlined" :style="{ borderColor: pilota.coloreTeam, color: pilota.coloreTeam }">
                                             {{ pilota.scuderia }}
                                         </v-chip>
@@ -511,7 +500,7 @@ const SchermataClassifica = {
                         </v-list>
                     </v-card-text>
                     <v-card-actions class="justify-end">
-                        <v-btn color="red-darken-3" variant="text" @click="dialogDettaglio = false">Chiudi</v-btn>
+                        <v-btn icon="mdi-close" aria-label="Chiudi" color="red-darken-3" variant="text" @click="dialogDettaglio = false"></v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>

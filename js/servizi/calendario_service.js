@@ -29,7 +29,7 @@ const CalendarioService = {
 
             // Normalizza e arricchisce ogni Gran Premio con bandiere, date e orari italiani
             const tutteLeGare = (listaGareGrezze || []).map(gara => {
-                const paese = gara.Circuit?.Location?.country || '';
+                const paese = gara.Circuit?.Location?.country || gara.Circuit?.Location?.locality || gara.raceName || '';
                 const dataOraGaraIso = `${gara.date}T${gara.time || '13:00:00Z'}`;
                 const dataOraGara = new Date(dataOraGaraIso);
 
@@ -46,20 +46,31 @@ const CalendarioService = {
                 };
             });
 
+            const gareConStatoRisultati = await Promise.all(tutteLeGare.map(async gara => {
+                const conclusaPerData = gara.dataOraGara.getTime() + (3 * 60 * 60 * 1000) < adesso.getTime();
+                if (!conclusaPerData) return { ...gara, risultatiDisponibili: false };
+                try {
+                    const risultati = await recuperaRisultatiGara(gara.season || queryAnno, gara.round);
+                    return { ...gara, risultatiDisponibili: risultati.length > 0 };
+                } catch (errore) {
+                    return { ...gara, risultatiDisponibili: false };
+                }
+            }));
+
             // 1. Gare Future (in programma)
-            const gareFuture = tutteLeGare.filter(g => {
+            const gareFuture = gareConStatoRisultati.filter(g => {
                 // Considera passata una gara dopo 3 ore dall'orario di partenza
                 return g.dataOraGara.getTime() + (3 * 60 * 60 * 1000) >= adesso.getTime();
             });
 
             // 2. Gare Passate (concluse) - ordinate dalla più recente alla più vecchia
-            const garePassate = tutteLeGare.filter(g => {
-                return g.dataOraGara.getTime() + (3 * 60 * 60 * 1000) < adesso.getTime();
+            const garePassate = gareConStatoRisultati.filter(g => {
+                return g.risultatiDisponibili && g.dataOraGara.getTime() + (3 * 60 * 60 * 1000) < adesso.getTime();
             }).reverse();
 
             return {
                 anno: queryAnno,
-                tutte: tutteLeGare,
+                tutte: gareConStatoRisultati,
                 gareFuture: gareFuture,
                 garePassate: garePassate
             };

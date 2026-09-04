@@ -13,10 +13,10 @@ const SchermataPronostici = {
             </div>
 
             <v-card v-if="!utente" elevation="2" class="pa-8 text-center mb-6">
-                <v-icon icon="mdi-google" color="red-darken-3" size="52" class="mb-3"></v-icon>
+                <v-icon icon="mdi-account-circle" color="red-darken-3" size="52" class="mb-3"></v-icon>
                 <h2 class="text-h5 font-weight-bold mb-2">Accedi per partecipare</h2>
-                <p class="text-body-2 text-grey-darken-1 mb-4">I tuoi pronostici e i punti ottenuti saranno salvati nel tuo account Firebase.</p>
-                <v-btn color="red-darken-3" prepend-icon="mdi-google" :loading="caricamento" @click="accedi">Accedi con Google</v-btn>
+                <p class="text-body-2 text-grey-darken-1 mb-4">Crea un account o accedi dal Profilo per salvare pronostici e punti.</p>
+                <v-btn color="red-darken-3" prepend-icon="mdi-account-plus" to="/profilo">Accedi o crea account</v-btn>
             </v-card>
 
             <template v-else>
@@ -27,8 +27,12 @@ const SchermataPronostici = {
 
                 <v-alert v-else-if="!eventi.length" type="info" variant="tonal" class="mb-6">Non ci sono sessioni di qualifica disponibili per il prossimo weekend.</v-alert>
 
-                <v-row v-else class="mb-6">
-                    <v-col v-for="evento in eventi" :key="evento.id" cols="12" lg="6">
+                <v-alert v-if="eventi.length" type="info" variant="tonal" class="mb-6">
+                    <strong>Come si calcolano i punti:</strong> 10 punti per il poleman corretto, più i punti ufficiali ottenuti da ciascun pilota del podio. Quando è presente una Sprint, puoi compilare un pronostico separato per Sprint e gara.
+                </v-alert>
+
+                <v-row v-if="eventi.length" class="mb-6">
+                    <v-col v-for="evento in eventi" :key="evento.id" cols="12">
                         <v-card elevation="2" class="pa-4 h-100">
                             <v-card-title class="px-0 d-flex align-center justify-space-between flex-wrap ga-2">
                                 <span>{{ evento.tipo === 'sprint' ? 'Pronostico Sprint' : 'Pronostico Gara' }}</span>
@@ -125,7 +129,7 @@ const SchermataPronostici = {
                 utente.value = nuovoUtente;
                 if (nuovoUtente) await caricaDati(); else caricamento.value = false;
             });
-            if (!FirebaseService.configurato()) { caricamento.value = false; mostraMessaggio('Configura Firebase in js/firebase_config.js per attivare il login Google.', 'warning'); }
+            if (!FirebaseService.configurato()) { caricamento.value = false; mostraMessaggio('Configura Firebase in js/firebase_config.js per attivare l\'accesso.', 'warning'); }
         });
         onUnmounted(() => annullaAuth());
         return { PronosticiService, utente, gara, piloti, eventi, moduli, storico, messaggio, tipoMessaggio, caricamento, salvataggio, accedi, inviaPronostico, pilotiDisponibili, nomePilota, formattaScadenza };

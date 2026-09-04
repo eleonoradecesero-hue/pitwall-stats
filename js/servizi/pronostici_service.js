@@ -63,7 +63,7 @@ const PronosticiService = {
 
     async salva(uid, evento, pronostico) {
         if (!FirebaseService.database) FirebaseService.inizializza();
-        if (!FirebaseService.database || !uid) throw new Error('Accedi con Google per salvare il pronostico.');
+        if (!FirebaseService.database || !uid) throw new Error('Accedi al tuo account per salvare il pronostico.');
         const errore = this.validaPronostico(pronostico, evento);
         if (errore) throw new Error(errore);
         const dati = {

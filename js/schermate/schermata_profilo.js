@@ -5,10 +5,18 @@ const SchermataProfilo = {
         <v-container fluid class="pa-4">
             <v-alert v-if="messaggio" :type="tipoMessaggio" variant="tonal" closable class="mb-4">{{ messaggio }}</v-alert>
             <v-card v-if="!utente" elevation="2" class="pa-6 mb-6 text-center">
-                <v-icon icon="mdi-google" color="red-darken-3" size="48" class="mb-3"></v-icon>
-                <h2 class="text-h5 font-weight-bold mb-2">Accedi per creare il tuo profilo</h2>
-                <p class="text-body-2 text-grey-darken-1 mb-4">Salva preferenze e panoramiche su tutti i tuoi dispositivi.</p>
-                <v-btn color="red-darken-3" prepend-icon="mdi-google" @click="accedi">Accedi con Google</v-btn>
+                <v-icon icon="mdi-account-circle" color="red-darken-3" size="48" class="mb-3"></v-icon>
+                <h2 class="text-h5 font-weight-bold mb-2">Crea il tuo account Pitwall Stats</h2>
+                <p class="text-body-2 text-grey-darken-1 mb-4">Salva preferiti, pronostici e punti su tutti i tuoi dispositivi.</p>
+                <v-form @submit.prevent="autenticaEmail" class="auth-form mx-auto">
+                    <v-text-field v-model="email" label="Email" type="email" autocomplete="email" prepend-inner-icon="mdi-email-outline" variant="outlined" required></v-text-field>
+                    <v-text-field v-model="password" label="Password" type="password" autocomplete="current-password" prepend-inner-icon="mdi-lock-outline" variant="outlined" hint="Almeno 6 caratteri" persistent-hint required></v-text-field>
+                    <v-text-field v-if="modalitaRegistrazione" v-model="confermaPassword" label="Conferma password" type="password" autocomplete="new-password" prepend-inner-icon="mdi-lock-check-outline" variant="outlined" required></v-text-field>
+                    <v-btn type="submit" block color="red-darken-3" :loading="autenticazioneInCorso" class="mb-2">{{ modalitaRegistrazione ? 'Crea account' : 'Accedi' }}</v-btn>
+                    <v-btn type="button" variant="text" color="red-darken-3" @click="modalitaRegistrazione = !modalitaRegistrazione">{{ modalitaRegistrazione ? 'Ho già un account' : 'Crea un nuovo account' }}</v-btn>
+                    <div class="text-caption text-grey my-2">oppure</div>
+                    <v-btn variant="outlined" color="red-darken-3" prepend-icon="mdi-google" @click="accedi">Accedi con Google</v-btn>
+                </v-form>
             </v-card>
             <!-- TITOLO -->
             <v-row v-if="utente">
@@ -30,7 +38,7 @@ const SchermataProfilo = {
                                 <span v-else class="text-h4 text-white font-weight-bold">{{ inizialiUtente }}</span>
                             </v-avatar>
                             <div>
-                                <div class="text-overline text-grey-darken-1">Account Google</div>
+                                <div class="text-overline text-grey-darken-1">Account Pitwall Stats</div>
                                 <h2 class="text-h4 font-weight-black text-grey-darken-3">{{ datiUtente.nome }} {{ datiUtente.cognome }}</h2>
                             </div>
                         </v-card-text>
@@ -67,7 +75,7 @@ const SchermataProfilo = {
                             </v-row>
                             <v-alert v-if="preferiti.piloti.length < 2 || !preferiti.scuderia" type="info" variant="tonal" class="mb-4">Seleziona due piloti e una scuderia per completare il tuo profilo.</v-alert>
                             <v-row v-if="pilotiPreferiti.length || scuderiaPreferita" class="mt-2">
-                                <v-col v-for="pilota in pilotiPreferiti" :key="pilota.id" cols="12" lg="6">
+                                <v-col v-for="(pilota, indice) in pilotiPreferiti" :key="pilota.id" cols="12" lg="4" :class="`preferito-pilota preferito-pilota-${indice + 1}`">
                                     <v-card elevation="3" class="pa-5 h-100 rounded-xl hover-card">
                                         <v-row align="center">
                                             <v-col cols="12" sm="4" class="text-center">
@@ -93,7 +101,7 @@ const SchermataProfilo = {
                                         </v-row>
                                     </v-card>
                                 </v-col>
-                                <v-col v-if="scuderiaPreferita" cols="12" lg="6">
+                                <v-col v-if="scuderiaPreferita" cols="12" lg="4" class="preferito-scuderia">
                                     <v-card elevation="3" class="pa-5 h-100 rounded-xl hover-card">
                                         <v-row align="center">
                                             <v-col cols="12" sm="4" class="text-center">
@@ -135,6 +143,11 @@ const SchermataProfilo = {
         const listaScuderie = ref([]);
         const messaggio = ref('');
         const tipoMessaggio = ref('info');
+        const email = ref('');
+        const password = ref('');
+        const confermaPassword = ref('');
+        const modalitaRegistrazione = ref(false);
+        const autenticazioneInCorso = ref(false);
 
         // 1. Variabile reattiva che contiene tutti i dati del form legati con v-model
         const datiUtente = ref({ ...ProfiloService.datiUtentePredefiniti });
@@ -158,6 +171,18 @@ const SchermataProfilo = {
         };
 
         const accedi = async () => { try { await ProfiloService.accediConGoogle(); } catch (errore) { mostraMessaggio(errore.message, 'error'); } };
+        const autenticaEmail = async () => {
+            if (password.value.length < 6) { mostraMessaggio('La password deve contenere almeno 6 caratteri.', 'warning'); return; }
+            if (modalitaRegistrazione.value && password.value !== confermaPassword.value) { mostraMessaggio('Le password non coincidono.', 'warning'); return; }
+            autenticazioneInCorso.value = true;
+            try {
+                if (modalitaRegistrazione.value) await ProfiloService.registraConEmail(email.value, password.value);
+                else await ProfiloService.accediConEmail(email.value, password.value);
+                password.value = '';
+                confermaPassword.value = '';
+            } catch (errore) { mostraMessaggio(errore.message, 'error'); }
+            finally { autenticazioneInCorso.value = false; }
+        };
         const esci = () => ProfiloService.esci();
         const salvaPreferiti = async () => {
             preferiti.value.piloti = preferiti.value.piloti.slice(0, 2);
@@ -176,7 +201,7 @@ const SchermataProfilo = {
                     utente.value = nuovoUtente;
                     if (nuovoUtente) await caricaPreferenze();
                 });
-                if (!ProfiloService.configurato()) mostraMessaggio('Configura Firebase in js/firebase_config.js per attivare il login Google.', 'warning');
+                if (!ProfiloService.configurato()) mostraMessaggio('Configura Firebase in js/firebase_config.js per attivare l\'accesso.', 'warning');
             } catch (errore) { mostraMessaggio('Impossibile caricare piloti e scuderie.', 'error'); }
         });
 
@@ -191,7 +216,13 @@ const SchermataProfilo = {
             inizialiUtente,
             messaggio,
             tipoMessaggio,
+            email,
+            password,
+            confermaPassword,
+            modalitaRegistrazione,
+            autenticazioneInCorso,
             accedi,
+            autenticaEmail,
             esci,
             salvaPreferiti
         };

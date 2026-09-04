@@ -217,6 +217,7 @@ const UtilityF1 = {
         for (const [chiave, sigla] of Object.entries(mappa)) {
             if (n.includes(chiave)) return sigla;
         }
+        if (n.includes('perez') || n.includes('mexic')) return 'MEX';
         return n.length === 3 ? n.toUpperCase() : 'N/D';
     },
 

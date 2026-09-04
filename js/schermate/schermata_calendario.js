@@ -188,7 +188,7 @@ const SchermataCalendario = {
                                 <span>{{ garaSelezionata.raceName }}</span>
                             </div>
                         </div>
-                        <v-btn icon="mdi-close" variant="text" color="white" @click="dialogRisultati = false"></v-btn>
+                        <v-btn icon="mdi-close" aria-label="Chiudi" variant="text" color="white" @click="dialogRisultati = false"></v-btn>
                     </v-card-title>
 
                     <v-card-text class="pa-4">
@@ -243,9 +243,6 @@ const SchermataCalendario = {
                         </div>
                     </v-card-text>
 
-                    <v-card-actions class="pa-4 border-top justify-end">
-                        <v-btn color="grey-darken-1" variant="text" @click="dialogRisultati = false">Chiudi</v-btn>
-                    </v-card-actions>
                 </v-card>
             </v-dialog>
         </v-container>

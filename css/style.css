@@ -19,6 +19,7 @@
 /* Blocchi digitali del Countdown */
 .countdown-blocco {
     background: rgba(0, 0, 0, 0.45);
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 12px;
@@ -138,4 +139,45 @@
 .table-classifica tbody tr:hover {
     background-color: rgba(183, 28, 28, 0.04) !important;
 }
-
+
+.switch-sezione {
+    gap: 8px;
+    border-radius: 10px !important;
+}
+
+.switch-sezione .v-btn {
+    border-radius: 7px !important;
+    opacity: 0.78;
+}
+
+.switch-sezione .v-btn--active {
+    opacity: 1;
+    background: #ffffff !important;
+    color: #b71c1c !important;
+}
+
+.nome-pilota {
+    display: inline-flex;
+    flex-direction: column;
+    text-align: center;
+    line-height: 1.25;
+}
+
+.badge-uniforme {
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.v-chip {
+    min-height: 28px;
+}
+
+.auth-form {
+    max-width: 420px;
+}
+
+.preferito-pilota-1 { order: 1; }
+.preferito-scuderia { order: 2; }
+.preferito-pilota-2 { order: 3; }
+

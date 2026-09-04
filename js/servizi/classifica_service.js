@@ -33,6 +33,7 @@ const ClassificaService = {
         return pilotiStandings.map(item => {
             const nomeCompleto = `${item.Driver.givenName} ${item.Driver.familyName}`;
             const nomeTeam = item.Constructors?.[0]?.name || 'Team sconosciuto';
+            const nazionalitaPilota = /perez/i.test(item.Driver.familyName) ? 'Mexican' : item.Driver.nationality;
             const punti = Number(item.points || 0);
             const posizione = Number(item.position || 1);
             const informazioniPilota = UtilityF1.informazioni_piloti.find(pilota =>
@@ -44,13 +45,14 @@ const ClassificaService = {
             return {
                 posizione: posizione,
                 nome: nomeCompleto,
+                nomeRighe: [item.Driver.givenName, item.Driver.familyName],
                 nomeBreve: `${item.Driver.givenName[0]}. ${item.Driver.familyName}`,
                 sigla: item.Driver.code || item.Driver.familyName.slice(0, 3).toUpperCase(),
                 numero: item.Driver.permanentNumber || item.Driver.driverId,
                 scuderia: nomeTeam,
                 coloreTeam: UtilityF1.ottieniColoreScuderia(nomeTeam),
-                nazionalita: item.Driver.nationality || 'N/D',
-                siglaNazionalita: UtilityF1.ottieniSiglaNazionalita(item.Driver.nationality),
+                nazionalita: nazionalitaPilota || 'N/D',
+                siglaNazionalita: UtilityF1.ottieniSiglaNazionalita(nazionalitaPilota),
                 punti: punti,
                 vittorie: Number(item.wins || 0),
                 deltaDalPrimo: puntiPrimo - punti,

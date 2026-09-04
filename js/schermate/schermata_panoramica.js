@@ -42,13 +42,13 @@ const SchermataPanoramica = {
                                 v-model="tipoPanoramicaSelezionato" 
                                 mandatory 
                                 color="white" 
-                                class="elevation-2 bg-black-opacity rounded-pill pa-1"
+                                class="switch-sezione elevation-2 bg-black-opacity pa-1"
                                 @update:model-value="chiudiDettaglio"
                             >
-                                <v-btn value="piloti" prepend-icon="mdi-account" class="rounded-pill font-weight-bold px-4" size="small">
+                                <v-btn value="piloti" prepend-icon="mdi-account" class="font-weight-bold px-4" size="small">
                                     Piloti
                                 </v-btn>
-                                <v-btn value="scuderie" prepend-icon="mdi-car-sports" class="rounded-pill font-weight-bold px-4" size="small">
+                                <v-btn value="scuderie" prepend-icon="mdi-car-sports" class="font-weight-bold px-4" size="small">
                                     Scuderie
                                 </v-btn>
                             </v-btn-toggle>

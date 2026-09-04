@@ -28,6 +28,19 @@ const FirebaseService = {
         return risultato.user;
     },
 
+    async accediConEmail(email, password) {
+        if (!this.inizializza()) throw new Error('Configura Firebase in js/firebase_config.js prima di accedere.');
+        const risultato = await this.autenticazione.signInWithEmailAndPassword(email, password);
+        return risultato.user;
+    },
+
+    async registraConEmail(email, password) {
+        if (!this.inizializza()) throw new Error('Configura Firebase in js/firebase_config.js prima di registrarti.');
+        const risultato = await this.autenticazione.createUserWithEmailAndPassword(email, password);
+        await this.salvaProfilo(risultato.user.uid, { email: risultato.user.email });
+        return risultato.user;
+    },
+
     async esci() {
         if (this.autenticazione) await this.autenticazione.signOut();
     },
