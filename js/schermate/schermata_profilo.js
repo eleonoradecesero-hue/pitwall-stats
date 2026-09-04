@@ -75,7 +75,7 @@ const SchermataProfilo = {
                             </v-row>
                             <v-alert v-if="preferiti.piloti.length < 2 || !preferiti.scuderia" type="info" variant="tonal" class="mb-4">Seleziona due piloti e una scuderia per completare il tuo profilo.</v-alert>
                             <v-row v-if="pilotiPreferiti.length || scuderiaPreferita" class="mt-2">
-                                <v-col v-for="(pilota, indice) in pilotiPreferiti" :key="pilota.id" cols="12" lg="4" :class="`preferito-pilota preferito-pilota-${indice + 1}`">
+                                <v-col v-for="(pilota, indice) in pilotiPreferiti" :key="pilota.id" cols="12" lg="4" :class="'preferito-pilota preferito-pilota-' + (indice + 1)">
                                     <v-card elevation="3" class="pa-5 h-100 rounded-xl hover-card">
                                         <v-row align="center">
                                             <v-col cols="12" sm="4" class="text-center">
