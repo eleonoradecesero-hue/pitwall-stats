@@ -20,7 +20,11 @@ const SchermataAnalisi = {
             </v-card>
             <v-alert v-if="errore" type="error" variant="tonal" class="mb-4">{{ errore }}</v-alert>
             <div v-if="caricamento" class="text-center py-8"><v-progress-circular indeterminate color="red-darken-3" size="48"></v-progress-circular><p class="text-body-1 mt-4">I dati vengono scaricati, calcolati e salvati nella cache...</p></div>
-            <div v-else-if="!sessioni.length" class="text-center text-grey py-12"><v-icon icon="mdi-chart-box-outline" size="64"></v-icon><p class="text-h6">Seleziona un Gran Premio per iniziare.</p></div>
+            <div v-else-if="!sessioni.length" class="text-center text-grey py-12">
+                <v-icon icon="mdi-clock-outline" color="amber-darken-3" size="64"></v-icon>
+                <p class="text-h6 mt-3">Dati della sessione non ancora disponibili.</p>
+                <p class="text-body-2">Se il Gran Premio è in corso, tempi e telemetria verranno pubblicati dall'API al termine della sessione. Riprova più tardi.</p>
+            </div>
             <v-expansion-panels v-else multiple>
                 <v-expansion-panel v-for="sessione in sessioni" :key="sessione.session_key">
                     <v-expansion-panel-title>
