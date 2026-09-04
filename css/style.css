@@ -89,6 +89,28 @@
     position: relative;
 }
 
+.podium-card h2,
+.podium-card h3 {
+    font-size: 1.15rem !important;
+    line-height: 1.2;
+}
+
+.podium-first h2 {
+    font-size: 1.3rem !important;
+}
+
+.podium-card .v-chip {
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 10px !important;
+    font-size: 0.75rem !important;
+    line-height: 1;
+}
+
+.podium-card .v-chip .v-icon {
+    font-size: 15px !important;
+}
+
 .podium-first {
     background: linear-gradient(180deg, #fff9e6 0%, #ffffff 100%) !important;
     border: 2px solid #ffd700 !important;
