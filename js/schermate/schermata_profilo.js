@@ -42,6 +42,21 @@ const SchermataProfilo = {
                                 <h2 class="text-h4 font-weight-black text-grey-darken-3">{{ datiUtente.nome }} {{ datiUtente.cognome }}</h2>
                             </div>
                         </v-card-text>
+                        <v-divider></v-divider>
+                        <v-card-text>
+                            <div class="text-subtitle-1 font-weight-bold mb-2">Dati personali</div>
+                            <v-form @submit.prevent="salvaDatiUtente">
+                                <v-row>
+                                    <v-col cols="12" sm="6">
+                                        <v-text-field v-model="datiUtente.nome" label="Nome" variant="outlined" autocomplete="given-name" required></v-text-field>
+                                    </v-col>
+                                    <v-col cols="12" sm="6">
+                                        <v-text-field v-model="datiUtente.cognome" label="Cognome" variant="outlined" autocomplete="family-name" required></v-text-field>
+                                    </v-col>
+                                </v-row>
+                                <v-btn type="submit" color="red-darken-3" prepend-icon="mdi-content-save" :loading="salvataggioDati">Salva nome e cognome</v-btn>
+                            </v-form>
+                        </v-card-text>
                     </v-card>
                 </v-col>
 
@@ -148,6 +163,7 @@ const SchermataProfilo = {
         const confermaPassword = ref('');
         const modalitaRegistrazione = ref(false);
         const autenticazioneInCorso = ref(false);
+        const salvataggioDati = ref(false);
 
         // 1. Variabile reattiva che contiene tutti i dati del form legati con v-model
         const datiUtente = ref({ ...ProfiloService.datiUtentePredefiniti });
@@ -184,6 +200,26 @@ const SchermataProfilo = {
             finally { autenticazioneInCorso.value = false; }
         };
         const esci = () => ProfiloService.esci();
+        const salvaDatiUtente = async () => {
+            const nome = datiUtente.value.nome.trim();
+            const cognome = datiUtente.value.cognome.trim();
+            if (!nome || !cognome) {
+                mostraMessaggio('Inserisci sia il nome sia il cognome.', 'warning');
+                return;
+            }
+            salvataggioDati.value = true;
+            try {
+                datiUtente.value.nome = nome;
+                datiUtente.value.cognome = cognome;
+                await ProfiloService.salvaDatiUtente(utente.value, datiUtente.value);
+                utente.value.displayName = `${nome} ${cognome}`;
+                mostraMessaggio('Nome e cognome aggiornati.', 'success');
+            } catch (errore) {
+                mostraMessaggio('Impossibile salvare i dati personali.', 'error');
+            } finally {
+                salvataggioDati.value = false;
+            }
+        };
         const salvaPreferiti = async () => {
             preferiti.value.piloti = preferiti.value.piloti.slice(0, 2);
             if (!utente.value) return;
@@ -221,9 +257,11 @@ const SchermataProfilo = {
             confermaPassword,
             modalitaRegistrazione,
             autenticazioneInCorso,
+            salvataggioDati,
             accedi,
             autenticaEmail,
             esci,
+            salvaDatiUtente,
             salvaPreferiti
         };
     }

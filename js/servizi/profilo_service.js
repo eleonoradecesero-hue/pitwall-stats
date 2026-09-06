@@ -59,6 +59,10 @@ const ProfiloService = {
     },
 
     async salvaDatiUtente(utente, datiUtente) {
+        const nome = (datiUtente.nome || '').trim();
+        const cognome = (datiUtente.cognome || '').trim();
+        const displayName = `${nome} ${cognome}`.trim();
+        await FirebaseService.aggiornaNomeUtente(utente, displayName);
         await FirebaseService.salvaProfilo(utente.uid, datiUtente);
     },
 

@@ -63,5 +63,10 @@ const FirebaseService = {
             ...dati,
             aggiornatoIl: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
+    },
+
+    async aggiornaNomeUtente(utente, displayName) {
+        if (!utente) return;
+        await utente.updateProfile({ displayName });
     }
 };
